@@ -1,0 +1,64 @@
+#Simple linear regression using gretl
+
+#Do cigarette taxes (X) reduce smoking (Y)?
+
+#Y: consumption, per capita in the state
+#X: cigarette taxes (measured in dollars)
+
+#scatterplot 
+
+gnuplot consumption cig_tax --fit=none --output=display
+
+summary consumption cig_tax
+
+corr consumption cig_tax
+
+
+#OUR MODEL: consumption = b0 + b1*cig_tax + error
+
+#We estimate the model using the method of least squares (OLS)
+
+ols consumption const cig_tax
+
+#b1_hat = -29.8
+
+#For a one-dollar increase in cigarette taxes we expect consumption of cigarettes per capita to decrease by 29.8
+
+#Ho: b1 = 0
+#Ha: b1 does not = 0
+
+#t-stat = -3.456
+#p-value = .0011
+
+#Reject Ho, the coefficient on the cig_tax variable is statistically different from zero (statistically significant)
+
+scalar tstat = (-29.8 - 0)/8.62165
+
+#R-squared = .19 -> that approximately 19% of the total variation in consumption is explained by its linear relationship with cig_tax
+
+eval sqrt(11.94492)
+
+#OUR ESTIMATED REGRESSION LINE: consumption = 122.6 - 29.8*cig_tax 
+
+gnuplot consumption cig_tax --output=display
+
+#95% confidence interval for estimated slope coefficient
+scalar ub = $coeff(cig_tax) + (critical(t, $df, .025)*$stderr(cig_tax))
+scalar lb = $coeff(cig_tax) - (critical(t, $df, .025)*$stderr(cig_tax))
+
+#confidence interval = (-47.12, -12.47)
+
+#let's predict consumption for cig tax of $1
+
+scalar predict_1dollartax = $coeff(const) + ($coeff(cig_tax)*1)
+
+#We predicted that annual cigarette consumption per capita is equal to 92.8 when cigarette tax equals $2
+
+#let's predict consumption for cig tax of $2
+
+scalar predict_1dollartax = $coeff(const) + ($coeff(cig_tax)*2)
+
+
+
+
+

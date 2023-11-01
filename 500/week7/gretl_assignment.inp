@@ -1,0 +1,31 @@
+m1<-ols sales const price adv_cost --vcv
+
+scalar yhat = $coeff(const) + $coeff(price)*5.50 + $coeff(adv_cost)*1.2
+printf "\nPredicted sales when price=$5.50 and adv_cost=$1200 is $%.2f\n", yhat*1000 
+
+printf "\n Compute a 95%% confidence interval for the variable price.\n"
+printf "\n"
+
+scalar bL = $coeff(price) - critical(t, $df, 0.025) * $stderr(price)
+scalar bU = $coeff(price) + critical(t, $df, 0.025) * $stderr(price)
+printf "\nThe lower = %.2f and upper = %.2f confidence limits\n", bL, bU
+
+scalar t1=($coeff(price)-0)/$stderr(price)
+pvalue t $df t1
+scalar t2=($coeff(adv_cost)-0)/$stderr(adv_cost)
+printf "\n"
+printf "\n"
+
+printf "\n The t-ratio for H0: b1=0 is = %.3f.\n\
+  The t-ratio for H0: b2=0 is %.3f.", t1, t2
+  printf "\n"
+printf "\n Remember that b0 is the const term.\n"
+printf "\n"
+printf "\n"
+
+
+printf "\n The P-value or \n"
+scalar t3 = ($coeff(adv_cost)-1)/$stderr(adv_cost)
+pvalue t $df t3
+
+printf "\n The t-ratio H0: b2=1 is = %.3f.\n",t3

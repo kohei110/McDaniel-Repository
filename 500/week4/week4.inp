@@ -1,0 +1,64 @@
+summary --simple
+
+
+#How to get summary statistics across categories
+
+summary obama_therm --by=race_ethnicity
+
+#setinfo race_ethnicity --description-"1=White, 2 blackm 3 hispanic 4 other"
+
+# the mean for the big business thermometer differs across whether or not someone has the internet
+#H0 Mu_bigbus_withinternet - mu_bigbus_without 
+
+freq internet
+# series netaccess = (internet==1)
+# discrete netaccess
+
+freq netaccess
+
+summary bigbus_therm --by=netaccess
+
+anova bigbus_therm netaccess
+
+# p-=val is approx 0
+# thereforem we reject H0 we beliebe there is a stats sign diff
+
+#t-stats
+eval sqrt(51.4172) # 7.1705788
+
+pvalue t 2319 7.1705788
+#(両側 = 9.99795e-13; 余事象 = 1)
+
+# Now let's chweck out a chi-squared test for independence
+
+# Q ar4e the variable internet access and gun ownership related or independent?
+
+freq gunown
+
+# series gunown = (gunown==1)
+
+xtab netaccess gunown
+
+#       [   0][   1]  計
+#-------------------------
+#[   0]    547   149   696
+#[   1]   1074   502  1576
+#-------------------------
+#TOTAL    1621   651  2272
+ 
+# p-value = 3.8591e-07
+
+#H0 independent
+#H1 related(not independent) 
+
+xtab netaccess gunown --column
+
+
+# Finally lets conduct a one way anoba hypothesis test
+# Is there a difference in the mean of the federal gobermentn therm across race/ethnicity
+
+anova fedgov_therm race_ethnicity
+
+#p値 5.66e-38
+
+# reject H0 null hypothesis

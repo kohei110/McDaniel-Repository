@@ -1,0 +1,29 @@
+# smpl 1 356
+# store "/Users/nkohei/Workspace/mcdaniel/500/week5/first.gdt"
+# smpl 489 506
+# store "/Users/nkohei/Workspace/mcdaniel/500/week5/second.gdt"
+# open "/Users/nkohei/Workspace/mcdaniel/500/week5/first.gdt"
+# append "/Users/nkohei/Workspace/mcdaniel/500/week5/second.gdt"
+
+#store "/Users/nkohei/Workspace/mcdaniel/500/week5/housingWOBoston.gdt"
+
+smpl 30 --random
+store "/Users/nkohei/Workspace/mcdaniel/500/week5/smallHousingSample.csv"
+
+
+
+#Plot the records with those having average rooms=0.0 omitted
+gnuplot RM CMEDV --output=display
+
+summary 
+
+corr CMEDV RM 
+
+ols CMEDV 0 RM    
+scalar lowerb = $coeff(RM) - critical(t, $df, 0.025)*$stderr(RM)
+
+print lowerb
+
+scalar ub = $coeff(RM) + critical(t, $df, 0.025)*$stderr(RM)
+
+print ub
