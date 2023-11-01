@@ -1,0 +1,128 @@
+#Question 1 
+# Using the DC Crime dataset, estimate the mean for the variables "arrests". Enter your answer rounded to two decimal places.
+scalar meanArrest = mean(arrests)
+#213.27
+
+# QUESTION 2
+# Using the DC Crime dataset, estimate the mean for the variables "package". Enter your answer rounded to two decimal places.
+scalar meanPackage = mean(package)
+#14.89
+
+# QUESTION 3
+# Using the DC Crime dataset, estimate the mean for the variables "lights". Enter your answer rounded to two decimal places
+scalar meanLights = mean(lights)
+# 1425.57
+
+# QUESTION 4
+# Rename the variable schools "numschool". Create a new variable named "school" 
+# that equals 0 if no schools are present and equals 1 if any schools are present. 
+# Estimate the proportion of blocks where a school is present. 
+# Enter your answer rounded to two decimal places.
+
+# rename schools school
+# freq school
+
+series school01 = (school == 0)
+scalar school01Prop = mean(school01)
+freq school01
+scalar schoolProp = mean(school)
+freq school
+# 0.45
+
+
+# Question 5
+# Create a new variable named "highue" that equals 0 if a block less than 10% unemployment
+# and equals 1 if a block has 10% unemployment or higher. 
+# Estimate the proportion of blocks with unemployment of 10% or higher.
+series highue = (unemployed > 10.0)
+discrete highue
+
+scalar highueProp = mean(highue)
+# 0.45
+
+# QUESTION 6
+# Calculate 95% confidence intervals for "arrests," 
+#i.e. the upper bound ____ and the lower bound ____.
+# Enter your answers rounded to two decimal places.
+
+# summary arrests #no NULL
+scalar sdarrest = sd(arrests)
+scalar dfarrest = $nobs - 1
+scalar seArrest = sdarrest / sqrt(dfarrest+1) #
+# se for mean = sd/sqrt(n)
+
+# now let's calculate ci
+
+scalar ubound = meanArrest + (critical(t, dfarrest, .025)*seArrest) # 239.96
+scalar lbound = meanArrest - (critical(t, dfarrest, .025)*seArrest) # 186.58
+
+# QUESTION 7
+# Calculate 95% confidence intervals for "package," i.e. upper bound and lower bound. 
+# Enter your answers rounded to two decimal places.
+
+# summary package # No NULL
+scalar sdPackage = sd(package)
+scalar dfPackage = $nobs - 1
+scalar sePackage = sdPackage/sqrt(dfPackage+1)
+
+scalar uboundPackage = meanPackage + (critical(t, dfPackage, .025)*sePackage) # 17.07
+scalar lboundPackage = meanPackage - (critical(t, dfPackage, .025)*sePackage) # 12.70 #12.7?
+
+# QUESTION 8
+# Calculate 95% confidence intervals for "lights," i.e. upper bound and lower bound. 
+# Enter your answers rounded to two decimal places.
+
+# summary lights
+
+scalar sdLights = sd(lights)
+scalar dfLights = $nobs - 1
+scalar seLights = sdLights/sqrt(dfLights+1)
+
+scalar uboundLights = meanLights + (critical(t, dfLights, .025)*seLights) # 1484.33
+scalar lboundLights = meanLights - (critical(t, dfLights, .025)*seLights) # 1366.82
+
+
+# QUESTION 9
+# Calculate 95% confidence intervals for "school," i.e. upper bound, and lower bound. 
+# Enter your answers rounded to two decimal places.
+
+# print school01Prop 0.55
+
+scalar seProp = sqrt((school01Prop*(1-school01Prop))/$nobs)
+scalar uboundSchoolProp = school01Prop + (critical(z,.025)*seProp) # 0.60
+scalar lboundSchoolProp = school01Prop - (critical(z,.025)*seProp) # 0.50
+
+
+# QUESTION 10
+# Calculate 95% confidence intervals for "highue," i.e. upper bound and lower bound. 
+# Enter your answers rounded to two decimal places.
+
+scalar seHighueProp = sqrt((highueProp*(1-highueProp))/$nobs)
+scalar uboundHighuelProp = highueProp + (critical(z,.025)*seHighueProp) # 0.49
+scalar lboundHighuelProp = highueProp - (critical(z,.025)*seHighueProp) # 0.40
+
+
+# QUESTION 11 ??? 
+#Graph a frequency distribution for the variable "school". 
+print schoolProp #mean schoolProp =  0.71229698
+scalar sdSchool =  sd(school01)
+print sdSchool #sdSchool =  0.49808352
+
+#Graph a frequency distribution for the variable "highue". 
+print highueProp #mean highueProp =  0.44547564
+scalar sdHighue =  sd(highue)
+print sdHighue #sdHighue =  0.49759580
+
+#Which variable is more evenly distributed? For your answer enter either "school" or "highue" in all lower case letters without the quotation marks.
+# QUESTION 12
+# Graph an estimated density for the variable "lights". 
+print $nobs
+
+
+# Graph an estimated density for the variable "arrests".
+# Which variable's distribution is more skewed, "lights" or "arrests", 
+# and it which direction is it skewed? 
+# For your first answer enter either "lights" or 'arrests" in all lower case letters 
+# without the quotation marks. For your second answer, 
+# enter either right or left in all lower case letters.
+

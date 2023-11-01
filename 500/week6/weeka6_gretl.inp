@@ -1,0 +1,39 @@
+summary CMEDV RM  
+ols CMEDV 0 RM --vcv
+
+ols CMEDV 0 crim nox RM AGE DIS TAX PTRATIO black lstat --vcv
+
+# 1
+# Nox
+
+# 2 false
+# 3 False
+
+# 4 False failed 
+
+ols CMEDV 0 crim RM AGE DIS TAX PTRATIO black lstat --vcv
+# 5 0.832340 
+
+ols CMEDV 0 crim nox RM AGE DIS TAX PTRATIO black --vcv
+# 6 0.831031
+
+ols CMEDV 0 RM AGE DIS TAX PTRATIO --vcv
+#7 0.819126
+
+ols CMEDV 0 crim nox AGE DIS TAX PTRATIO black lstat --vcv
+#8 0.530734
+
+#9 1.95e-043 or almost zero
+
+#10 0.207609
+ols CMEDV 0 RM AGE TAX PTRATIO black --vcv
+
+#11 False failed 
+
+#12 yes
+
+ols CMEDV 0 RM AGE TAX PTRATIO --vcv
+#13 10.9006 failed 10.6594
+
+#14 false 
+

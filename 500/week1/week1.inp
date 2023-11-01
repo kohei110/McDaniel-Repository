@@ -1,0 +1,15 @@
+genr constant = 0
+genr test = lifeexpf * 100
+
+series constant_series = 0
+freq develop
+
+series africa = region >=1 && region <=5
+freq africa
+
+series africa_developing = develop ==1 && africa == 1
+freq africa_developing 
+
+# series stndgdp = (gdp - mean(gdp))/sd(gdp)
+
+eval 40/42

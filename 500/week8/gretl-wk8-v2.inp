@@ -1,0 +1,491 @@
+#
+#Script for ANA 500 Week 8 gretl and P&P assignments
+#
+
+#
+#Part I Descriptive and Summary Statistics
+#
+printf "\n"
+printf "\n"
+printf "\n"
+printf "\n"
+printf "\n"
+printf "\n"
+printf "\n"
+printf "\n"
+printf "\n"
+printf "\n"
+printf "\n Starting Part I!\n"
+
+#Don't forget to change the path to wherever you have stored the data file!!!!!
+open \
+  "I:\My Passport Documents\McDaniel\DataAnalytics\ANA500\Exams\FinalFallI-2022\br2.gdt"
+#
+#Generate information about the data set as well as descriptive and summary statistics
+#
+scalar obsTotal = $nobs
+printf "\n The number of observations is %d.\n",obsTotal
+#
+labels
+#
+info
+#
+summary 
+
+#
+#Setup the data to generate the required scatter plot for traditional style homes
+#
+smpl traditional==1 --restrict
+gnuplot price sqft --fit=linear --output=display
+store "I:\My Passport Documents\McDaniel\DataAnalytics\ANA500\Exams\FinalFallI-2022\br2-trad.gdt" --gzipped=1
+#
+
+#
+#Print the number of observations of tradiitonal-style homes
+#
+
+scalar obsTrad = $nobs
+printf "\n The number of observations of traditional-style homes is %d.\n",obsTrad
+
+#
+#Consider the relationship between price and home size
+#
+corr price sqft
+
+
+#
+#Generate frequency plots to consider transforming the price variable
+#using a natural log transformation
+freq price --plot=display
+series l_price = ln(price)
+freq l_price --plot=display
+
+#
+#Generate a plot of ln(price) versus sqft
+gnuplot l_price sqft --fit=semilog --output=display
+
+
+
+#
+#Part II: Simple Linear and Non-Linear Regression
+#
+printf "\n"
+printf "\n"
+printf "\n"
+printf "\n"
+printf "\n"
+printf "\n"
+printf "\n"
+printf "\n"
+printf "\n"
+printf "\n"
+printf "\n Starting Part II!\n"
+
+
+#
+#******
+#Build a simple linear model
+#******
+#
+ols price const sqft --vcv
+#Save the sum of squares error
+sse_l = $ess
+#
+#Save the residuals to plot to verify assumptions
+#
+series uhat1_l = $uhat
+gnuplot uhat1_l sqft --output=display
+
+modtest --normality
+modtest --logs
+modtest --breusch-pagan
+
+#
+#Compute a 95% confidence interval for this model and the associated P-value
+#
+printf "The number of degrees of freedom is %.2f.\n",$df
+scalar tcrit = critical(t, $df, 0.025)
+printf "The critical value is %.2f.\n",tcrit
+#
+scalar lb = $coeff(sqft) - critical(t, $df, 0.025) * $stderr(sqft)
+scalar ub = $coeff(sqft) + critical(t, $df, 0.025) * $stderr(sqft)
+printf "For the data restricted to traditional-style houses, \n\
+  the lower bound is %.2f and the upper bound is %.2f.\n",lb,ub
+  
+#
+#Method to compute the P-value
+#
+#scalar t1 = critical(t, $df, .025)
+#printf "\nThe value of t-critical is %.2f.\n",t1
+#scalar t2 = ($coeff(sqft)-0)/$stderr(sqft)
+#scalar pval = pvalue(t, $df, t2)
+#printf "\nThe P-value is %.20f.\n", pval
+
+#
+#******
+#Build a second-order model
+#******
+#
+series sqft_sq = sqft^2
+ols price const sqft_sq --vcv
+#Save the sum of squares error
+sse_2 = $ess
+#Save the residuals
+series uhat1_q = $uhat
+#generate the corresponding scatter plot
+gnuplot price sqft_sq sqft --output=display 
+
+modtest --normality
+modtest --logs
+modtest --breusch-pagan
+
+#
+#******
+#Build a log-linear model
+#******
+#
+logs price
+ols l_price const sqft
+series l_yhat = $yhat
+series ln_pri = exp(l_yhat)
+#Compute the sum of squares error for the log-linear model
+#Note that the output for sse in the log-linear case is NOT accurate
+series y_diff = (price-ln_pri)^2
+scalar sse_ln = sum(y_diff)
+#Save the residuals
+series uhat1_ln = $uhat
+#Create the corresponding plot
+gnuplot price ln_pri sqft --output=display
+
+modtest --normality
+modtest --logs
+modtest --breusch-pagan
+
+#
+#Consolidate into one plot to examine the differences between models
+#
+gnuplot price sqft_sq ln_pri sqft --output=display
+
+#Print out the quantitative differences in SSE between models.
+printf "\n The Sum of Squares Error (SSE) for the linear model is %.3f\n",sse_l
+printf "\n The Sum of Squares Error (SSE) for the quadratic model is %.3f\n",sse_2
+printf "\n The Sum of Squares Error (SSE) for the log-linear model is %.3f\n",sse_ln
+
+
+#
+#Verify model assumptions 
+#
+#Use the Jarque-Bera statistic to verify normality
+#Normal random variables have no skew or excess kurtosis
+#Note that the JB test statistic value gets larger with increasing skew and kurtosis
+#
+normtest uhat1_l --all
+normtest uhat1_q --all
+normtest uhat1_ln --all
+#
+#Create plots of residuals
+#
+gnuplot uhat1_l sqft --output=display
+gnuplot uhat1_q sqft --output=display
+gnuplot uhat1_ln sqft --output=display
+
+
+
+
+
+#
+#Part III: Point Estimation, Interval Estimation and Hypothesis Testing
+#
+printf "\n"
+printf "\n"
+printf "\n"
+printf "\n"
+printf "\n"
+printf "\n"
+printf "\n"
+printf "\n"
+printf "\n"
+printf "\n"
+printf "\n Starting Part III!\n"
+
+
+#Don't forget to change the path to wherever you have stored the data file!!!!!
+open \
+  "I:\My Passport Documents\McDaniel\DataAnalytics\ANA500\Exams\FinalFallI-2022\br2.gdt"
+#
+#Consider the difference in house value when the house is owner-occupied versus
+#a vacant/rental house.
+
+#Subset the data for owner=1
+smpl owner==1 --restrict
+#Build a log-linear model
+#
+series l_price = ln(price)
+ols l_price const sqft age
+#Save the residuals
+series uhat1 = $uhat
+#Save the coefficients
+matrix b = $coeff
+b
+#Save the standard errors
+matrix serr = $stderr
+serr
+series l_yhat = $yhat
+series ln_own = exp(l_yhat)
+#Compute the sum of squares error for the log-linear model
+#Note that the output for sse in the log-linear case is NOT accurate
+series y_diff = (price-ln_own)^2
+scalar sse_ln = sum(y_diff)
+
+#Check some assumptions
+#Plot the frequencies to see if we have a more normal distribution 
+#for price using l_yhat.  Compare agains a freq plot of price
+freq price --plot=display
+freq l_yhat --plot=display
+
+#Plot the residuals
+gnuplot uhat1 sqft --output=display
+
+#Create the corresponding plots of results
+#In the first plot l_yhat still has not been transformed for final output
+gnuplot price l_yhat sqft --output=display
+gnuplot price ln_own sqft --output=display
+
+#Predict the price for a 2000 square foot house that is 20 years old
+#and is owner-occupied
+scalar pri_owner_2000 = exp(($coeff(const) + $coeff(sqft)*2000 + $coeff(age)*20))
+pri_owner_2000
+printf "\n The predicted price for an owner-occupied 2000 sq-ft house, 20 yrs old is %.2f. \n",pri_owner_2000
+
+
+#Retrieve the full dataset again
+smpl full
+
+#Now subset the data for owner=0
+smpl owner==0 --restrict
+#Build a log-linear model
+#
+series l_price = ln(price)
+ols l_price const sqft age
+#Save the residuals
+series uhat1_ln = $uhat
+#Save the standard errors
+matrix serr = $stderr
+series l_yhat = $yhat
+series ln_rent = exp(l_yhat)
+#Compute the sum of squares error for the log-linear model
+#Note that the output for sse in the log-linear case is NOT accurate
+series y_diff = (price-ln_rent)^2
+scalar sse_ln = sum(y_diff)
+#Generate a Q-Q Plot to check normality
+qqplot uhat1_ln --output=display
+
+#predict the price for a 2000 square foot house that is 20 years old
+# and is vacant or a rental
+scalar pri_rental = exp($coeff(const) + $coeff(sqft)*2000 + $coeff(age)*20)
+pri_rental
+
+printf "\n The predicted price for a vacant or rental 2000 sq-ft house, 20 yrs old is %.2f. \n", pri_rental
+
+
+#Create the corresponding plot
+gnuplot price ln_rent sqft --output=display
+#Consolidate results in one plot
+gnuplot price ln_own ln_rent sqft --output=display
+
+
+
+#
+#Part IV: Multivariable (or Multiple Variable) Regression
+#
+
+printf "\n"
+printf "\n"
+printf "\n"
+printf "\n"
+printf "\n"
+printf "\n"
+printf "\n"
+printf "\n"
+printf "\n"
+printf "\n"
+printf "\n Starting Part IV!\n"
+
+#
+#Build multivariable models
+#
+
+#Start with a linear model
+ols price const sqft age --vcv
+
+
+#Recover the full dataset
+smpl full
+
+
+#Build the multivariable linear model for the full (unrestricted) dataset
+ols price const sqft age --vcv
+#Save the sum of squares error (SSE)
+sse_lmulti = $ess
+#Save the residuals
+series uhat2_l = $uhat
+
+#
+#Add second order terms to the multivariable linear model to build a complete
+#quadratic model.  Remember that before you only added the one second-order term
+#to create a somewhat limited quadratic model
+#
+series sqft_sq = sqft^2
+series age_sq = age^2
+ols price const sqft sqft_sq age age_sq --vcv
+
+#Save the sum of squares error
+sse_2 = $ess
+
+#Save the standard error of regression
+se_reg = $sigma
+
+#Save the residuals
+series uhat1_q = $uhat
+
+#Save the matrix of coefficients and se
+matrix b = $coeff
+matrix cova = $vcv
+matrix serr = $stderr
+
+b
+
+#
+#Compute the 95% confidence interval for the marginal effect around size
+#for a 2300 square foot house
+siz = 2300
+serr_sqft = ((serr[2,]^2)+(((2*siz)^2)*(serr[3,]^2))+(2*(2*siz)*cova[2,3]))^0.5
+print serr_sqft
+
+der_sqft = b[2,]+(2*b[3,]*siz)
+print der_sqft
+
+scalar tcrit = critical(t, $df, .025)
+
+lb_multi2 = der_sqft - (tcrit*serr_sqft)
+ub_multi2 = der_sqft + (tcrit*serr_sqft)
+printf "\nThe 95%% Confidence Interval for the marginal effect of size on price \
+is from $%.2f to $%.2f.\n",lb_multi2,ub_multi2
+
+
+
+#
+#reopen the data file to eliminate rewriting over variables
+open \
+  "I:\My Passport Documents\McDaniel\DataAnalytics\ANA500\Exams\FinalFallI-2022\br2.gdt"
+
+#
+#Generate the interaction term
+genr sqft_owner = sqft * owner
+
+#
+#Build the Log-linear model
+logs price
+ols l_price const sqft bedrooms baths age owner sqft_owner
+series l_yhat = $yhat
+series ln_price = exp(l_yhat)
+
+#Save the residuals
+series uhat1_ln = $uhat
+
+#Setup the equations to get the results to consider the effect of size on owner-occupied
+#houses
+scalar me2000 = $coeff(sqft)+2000*$coeff(sqft_owner)
+scalar me2500 = $coeff(sqft)+2500*$coeff(sqft_owner)
+printf "\nThe marginal effect of size for owner-occupied 2000 square\
+  foot houses is %.2f.\n",me2000
+  
+printf "\nThe marginal effect of size for owner-occupied 2500 square\
+  foot houses is %.2f.\n",me2500
+
+#Create the corresponding plot
+gnuplot price ln_price sqft --output=display
+qqplot ln_price --output=display
+
+freq price --plot=display
+freq ln_price --plot=display
+
+
+#
+#Part V: Use of Indicator Variables (Section 5.10 in textbook)
+#
+printf "\n"
+printf "\n"
+printf "\n"
+printf "\n"
+printf "\n"
+printf "\n"
+printf "\n"
+printf "\n"
+printf "\n"
+printf "\n"
+printf "\n Starting Part V!"
+
+#
+#reopen the data file to eliminate rewriting over variables, etc.
+open \
+  "I:\My Passport Documents\McDaniel\DataAnalytics\ANA500\Exams\FinalFallI-2022\br2.gdt"
+
+#
+#First setup all the required terms and then
+#Build the quadratic model
+series sqft_sq = sqft^2
+series bedrooms_sq = bedrooms^2
+series baths_sq = baths^2
+series age_sq = age^2
+series owner_sq = owner^2
+series owner_sqft = owner*sqft
+series owner_bedrooms = owner*bedrooms
+series owner_baths = owner*baths
+series owner_age = owner*age
+series owner_sqft_sq = owner*sqft_sq
+series owner_bedrooms_sq = owner*bedrooms_sq
+series owner_baths_sq = owner*bedrooms_sq
+series owner_age_sq = owner*age_sq
+series owner_owner_sq = owner*owner_sq
+
+#
+ols price const sqft bedrooms baths age owner sqft_sq bedrooms_sq baths_sq age_sq owner_sq \
+  owner_sqft owner_bedrooms owner_baths owner_age owner_sqft_sq owner_bedrooms_sq owner_baths_sq \
+  owner_age_sq owner_owner_sq
+  
+
+series l_yhat = $yhat
+series ln_price = exp(l_yhat)
+
+#Save and plot the residuals
+series uhat1_ln = $uhat
+gnuplot uhat1_ln sqft --output=display
+
+#Setup the equations to get the results to consider the effect of size on owner-occupied
+#houses
+
+#When owner = 0
+scalar me2_2000 = $coeff(sqft)+2*$coeff(sqft_sq)*2000
+scalar me2_2500 = $coeff(sqft)+2*$coeff(sqft_sq)*2500
+
+#When owner = 1
+scalar me3_2000 = ($coeff(sqft)+$coeff(sqft))+2*($coeff(sqft_sq)+$coeff(sqft_sq))*2000
+scalar me3_2500 = ($coeff(sqft)+$coeff(sqft))+2*($coeff(sqft_sq)+$coeff(sqft_sq))*2500
+
+#
+#When owner = 0, the house is vacant or a rental
+printf "\nThe marginal effect of size for owner-occupied 2000 square\
+  foot houses is %.2f.\n",me2_2000
+  
+printf "\nThe marginal effect of size for owner-occupied 2500 square\
+  foot houses is %.2f.\n",me2_2500
+
+#
+#When owner = 1, the house is owner occupied
+printf "\nThe marginal effect of size for owner-occupied 2000 square\
+  foot houses is %.2f.\n",me3_2000
+  
+printf "\nThe marginal effect of size for owner-occupied 2500 square\
+  foot houses is %.2f.\n",me3_2500  
+

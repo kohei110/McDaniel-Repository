@@ -1,0 +1,169 @@
+# here is the second gretle script
+
+# Binomial dist
+# Independent trial
+# outcome is binary
+# n trial is independent
+# X~B(n,p)
+
+# class of 50 student, p of passing exam is 0.63
+# what is the probability that exactly 25 pass the exam
+
+
+scalar binom25 = pdf(b, 0.63, 50, 25)
+print binom25
+
+# X~B(50, 0.63)
+# binom25 =  0.019513733
+
+# CDF gives the probability that X<=30 etc
+
+scalar binom30less = cdf(b, .63, 50, 30)
+print binom30less
+# binom30less =  0.38050846
+
+scalar binom30more = 1- cdf(b, .63, 50, 30)
+print binom30more
+#    binom30more =  0.61949154
+
+
+#Poisson distribution
+# number of occurrence in fixed interval
+# Parameter is the mean number of occurecece = lambda
+
+# X~P(lambda)
+# number of amazon truck pass by my neighbor 12 per day
+
+# X~P(12)
+
+# What is the probability is the 10 Amazon
+
+scalar pois10 = pdf(p, 12, 10)
+print pois10
+# pois10 =  0.10483726
+
+scalar pois20 = pdf(p, 12, 20)
+print pois20
+# pois20 =  0.0096820322
+
+
+# what is the prob more than 20 truck
+# more = 1- cdf()
+# less = cdf()
+scalar pois_more20 = 1 - cdf(p, 12, 20)
+print pois_more20
+#  pois_more20 =  0.011597737
+
+
+
+# continuous uniform distribution
+# X~U(11,22)
+# probability of an arbitrary value within the interval
+# probability between 15 and 18
+
+eval (18-15)*(1/(22-11))
+
+
+# Normal dist
+#IQ Scoress are normaly distributed with a mean of 100 and standard deviation of 15.(variance 15^2 = 225)
+
+# X~N(100, 225)
+
+# what is the probability of that someone has greater than 150?, less than 80 and between 90 and 120
+
+#Step1: Convert to Z-score
+scalar z1 = (150-100)/15
+scalar z2 = (80-100)/15
+scalar z3 = (90-100)/15
+scalar z4 = (120-100)/15
+
+scalar iqmore150 = 1- cdf(z,z1) # 0.00042906
+scalar iqless80 = cdf(z,z2) # 0.0912112
+
+scalar iqless_90_120 = cdf(z,z4) - cdf(z,z3) # 0.656296
+eval 1- (0.252493 + 0.0912112) #0.656296 by using p-val finder
+
+# CLT
+nulldata 10
+set seed 123456
+
+loop 1000 --progressive --quiet 
+    series yt = uniform()
+    scalar ybar = mean(yt)
+    store clt.gdt ybar
+endloop
+
+
+open clt.gdt
+
+freq ybar --plot=display --normal
+
+
+
+# QUESTION 1
+# Let X = an odd number coming up when rolling a fair six-sided die. Calculate the probability of an odd number coming up exactly 9 times from 20 rolls.
+
+scalar dieOdd9Prb = pdf(b, 0.5, 20, 9)
+print dieOdd9Prb #0.16017914
+
+
+# QUESTION 2 
+# Let X = an odd number coming up when rolling a fair six-sided die. Calculate the probability of an odd number coming up more than 10 times from 20 rolls. 
+
+scalar dieOddGreater10Prb = 1- cdf(b, 0.5, 20, 10)
+print dieOddGreater10Prb # 0.41190147
+
+
+# QUESTION 3 
+# Let X = an odd number coming up when rolling a fair six-sided die. Calculate the probability of an odd number coming up fewer than 11 times from 20 rolls. 
+scalar dieOddLess11Prb = cdf(b, 0.5, 20, 11)
+print dieOddLess11Prb # 0.74827766
+
+# QUESTION 4 
+# Let X = an odd number coming up when rolling a fair six-sided die. Consider a graph you generate from this probability distribution. Does the graph resemble a normal distribution?
+# Yes
+
+# QUESTION 5 
+# Let X = the number of packages a business receives per week. The average number of packages received per week is 30. Calculate the probability the business receives exactly 25 packages in a week.
+scalar pckg25Prob = pdf(p,30,25)
+print pckg25Prob # 0.051115337
+
+# QUESTION 6
+# Let X = the number of packages a business receives per week. The average number of packages received per week is 30. Calculate the probability the business receives more than 33 packages in a week. 
+scalar pckgMore30Prob = 1 - cdf(p,30 , 33)
+print pckgMore30Prob # 0.25555124
+
+# QUESTION 7 9 points 
+# Let X = the number of packages a business receives per week. The average number of packages received per week is 30. Calculate the probability the business receives fewer than 40 packages in a week. 
+scalar pckgLess30Prob = cdf(p,30 , 40)
+print pckgLess30Prob # 0.96769043
+
+# QUESTION 8
+# Let X = the number of packages a business receives per week. The average number of packages received per week is 30. Consider a graph you provide for this distribution. Does the graph resemble the appropriate probability distribution? 
+Yes
+
+ 
+# QUESTION 9 
+# Let X = price of a gallon of gasoline. X — N (2.5 , 2) Calculate the probability the price of a gallon of gasoline is greater than 3. 
+
+scalar zGasoline3 = (3 - 2.5)/2
+scalar zGasoline2 = (2 - 2.5)/2
+
+scalar zGsolineGreater3 = 1- cdf(z,zGasoline3) 
+print(zGsolineGreater3) # 0.40129367
+
+# Question 10
+# Let X = price of a gallon of gasoline. X-N(2.5,2)  Calculate the probability the price of a gallon of gasoline is less than 2.  
+scalar zGsolineLess2 = cdf(z,zGasoline2) 
+print(zGsolineLess2) # 0.40129367
+
+# Question 11
+
+scalar z25 = (2.5-2.5)/2
+scalar z35 = (3.5-2.5)/2
+
+
+scalar gasoline25_35Prob = cdf(z,z35) - cdf(z,z25) # 0.191462
+
+# Question 12
+Yes

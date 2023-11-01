@@ -1,0 +1,17 @@
+
+# 1. Test the hypothesis that mean birthweight is different from 7 lbs. 
+freq birthweight
+
+eval mean(birthweight) # 6.6545474
+eval sd(birthweight) #1.4699994
+
+
+
+series gender01 = (gender == 0)
+discrete gender01
+
+
+series smoking01 = (smoking == 1)
+discrete smoking01
+
+summary birthweight --by=smoking01

@@ -1,0 +1,9 @@
+# ログ開始日時 2023-09-19 17:36
+# セッションで実行したコマンドを記録します
+# この記録をもとにスクリプトを作成するには、多くの場合、編集の必要があることに注意して下さい
+open \
+  "/Users/nkohei/Workspace/mcdaniel/500/week4/Maternal and infant health survey 2002(1).gdt"
+run /Users/nkohei/Workspace/mcdaniel/500/week4/week4_gretl.inp
+run /Users/nkohei/Workspace/mcdaniel/500/week4/week4_gretl.inp
+# store "/Users/nkohei/Workspace/mcdaniel/500/week4/Maternal_and_infant_health_survey2002.csv"
+run /Users/nkohei/Workspace/mcdaniel/500/week4/week4_gretl.inp

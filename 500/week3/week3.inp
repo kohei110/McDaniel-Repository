@@ -1,0 +1,72 @@
+# Let's first estimate mean BMI
+# rename BMI bmi
+
+scalar meanbmi = mean(bmi) # 20.9922
+
+
+# Let's estimate 95% of CI range
+# Firtly need to estimate sample std
+
+scalar sdbmi = sd(bmi) # 4.33843
+# Formula for the confidence interval = xbar <- T score * SE
+# We need to calculate the standard error
+
+# df = n-1
+summary bmi
+
+scalar dfbmi = $nobs - 2060  - 1
+
+scalar se_meanbmi = sdbmi / sqrt(dfbmi+1) # 0.0384112
+
+# se for mean = sd/sqrt(n)
+
+# now let's calculate ci
+
+scalar ubound = meanbmi + (critical(t, dfbmi, .025)*se_meanbmi) #  21.0675
+scalar lbound = meanbmi - (critical(t, dfbmi, .025)*se_meanbmi) #  20.9169
+
+
+
+# Let's estimate a propotion
+
+freq Q15A2
+
+series dadhome = (Q15A2 == 1)
+discrete dadhome
+freq dadhome
+
+scalar dadprop = mean(dadhome)
+
+#now let's calculate a 95% of ci for this propotion
+
+scalar se_prop = sqrt((dadprop*(1-dadprop))/$nobs)
+
+scalar uboundprop = dadprop + (critical(z,.25)*se_prop) # 0.624945
+scalar lboundprop = dadprop - (critical(z,.25)*se_prop) # 0.619572
+
+
+
+
+## Hypothesis testing
+# H0 H1
+
+dadprop # 0.62225822
+
+scalar tstat_bmi = (meanbmi - 22)/se_meanbmi # -26.2366
+
+
+pvalue t dfbmi tstat_bmi
+
+# what if we tested bmi of 21?
+scalar tstat_bmi2 = (meanbmi-21)/se_meanbmi
+pvalue t dfbmi tstat_bmi2
+
+print meanbmi
+
+#Let's test prop of kids with dad at home is different from .63
+# H0: p = .63
+# H1: p != .63
+
+scalar zstatprop = (dadprop - .63)/se_prop
+pvalue z zstatprop
+#pval = 0.0519267
