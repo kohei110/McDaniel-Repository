@@ -1,18 +1,28 @@
-# sample(c("Kevin", "Anna", "Marvine", "Vickie"))
-# [1] "Kevin"   "Anna"    "Vickie"  "Marvine"
+install.packages("ggplot2")
 
-sample(c("Tomo", "Shiba", "Jorge", "Jon"))
+sample_set <- sample(c("Prithvi","Priyanka","Ajay","Gaurav"))
 
+# print(sample_set)
+# [1] "Gaurav"   "Priyanka" "Prithvi"  "Ajay"    
+# [1] "Gaurav"   "Ajay"     "Prithvi"  "Priyanka"
+# [1] "Gaurav"   "Priyanka" "Ajay"     "Prithvi" 
+# [1] "Gaurav"   "Priyanka" "Ajay"     "Prithvi" 
+# [1] "Prithvi"  "Gaurav"   "Ajay"     "Priyanka"
 
-# This is for #3
+# Load necessary libraries
+library(ggplot2)
 
-# > sample(c("Tomo", "Shiba", "Jorge", "Jon"))
-# [1] "Jorge" "Tomo"  "Shiba" "Jon"  
-# > sample(c("Tomo", "Shiba", "Jorge", "Jon"))
-# [1] "Jorge" "Jon"   "Shiba" "Tomo" 
-# > sample(c("Tomo", "Shiba", "Jorge", "Jon"))
-# [1] "Jon"   "Tomo"  "Shiba" "Jorge"
-# > sample(c("Tomo", "Shiba", "Jorge", "Jon"))
-# [1] "Jorge" "Shiba" "Tomo"  "Jon"  
-# > sample(c("Tomo", "Shiba", "Jorge", "Jon"))
-# [1] "Shiba" "Jon"   "Jorge" "Tomo" 
+# Sample data
+data <- data.frame(
+  x = c(1, 2, 3, 4, 5),
+  y = c(5, 7, 4, 10, 6)
+)
+
+# Create scatter plot with ggplot2
+plot <- ggplot(data, aes(x=x, y=y)) + 
+  geom_point(aes(color=y), size=4) + 
+  labs(title="Sample Scatter Plot", x="X Axis", y="Y Axis") + 
+  theme_minimal()
+
+# Display the plot
+print(plot)
