@@ -1,0 +1,9 @@
+*.pdf # Ignore all pdf files from my project
+*.jpg
+*.jpeg
+
+# I want to ignore .DS_Store file, .Rhisotry, .RData and .Rproj.user folder
+.Rproj.user
+.DS_Store
+.RData
+.Rhistory
