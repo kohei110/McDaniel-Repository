@@ -1,0 +1,59 @@
+---
+title: "Diamond sizes SP '24"
+author: Kohei Nishitani
+date: 2024/01/19
+output: word_document
+---
+
+``` {r, echo = FALSE}
+#Note, Each gray box below is a code chunk. You need to insert a code chunk and put your R code in it. By setting echo = FALSE. this comment and any code will not show in my output document. If it were TRUE, the comment and code would appear. 
+```
+
+```{r setup, include = FALSE}
+#The include = FALSE function hides both the code and output in my output document. See what happens when you replace include=FALSE with echo=FALSE. In your final product, make sure this code chunk isn't displayed. 
+
+#You need to install these packages first to be able to use the functions within them (if you have not installed them before). You can install them from the Tools tab or write a new code chunk: install.packages("package_name"). 
+
+library(ggplot2)
+library(dplyr)
+```
+
+``` {r Data, include=FALSE}
+df_cw <- as.data.frame(ChickWeight)
+head(df_cw, 3)
+
+#Remember, the head command tell R to show us the top rows. Note where the first 3 rows show up when you knit. They are not in your output word document because you have include=FALSE in this code chunk heading.
+
+```
+
+```{r, include = FALSE}
+#this next line is creating a subset called 'small' of the diamonds data
+heavy_chick <- df_cw %>% 
+  filter(weight <= 40)
+```
+
+```{r, echo = FALSE}
+#This next chunk is inline code. Inline code puts the text with the output of the code in my document.
+```
+We have data about `r nrow(df_cw)` chick weight sample data.
+Only `r nrow(df_cw) - nrow(heavy_chick)` are heavier than
+40g. The distribution of the remainder is shown
+below:
+
+``` {r, echo = FALSE}
+#This next code chunk will make a plot in our output doc
+```
+
+```{r, echo = FALSE}
+heavy_chick %>% 
+  # Grouped
+  ggplot(aes(fill = Diet, y=Diet, x=weight)) + 
+  geom_bar(stat="summary", fun="mean", position="dodge")+
+  labs(title = "Chick weight and Diet type", subtitle = "from sample dataset")
+
+  
+```
+
+```{r, echo = FALSE}
+#Once all of my code has been written, I click on the Knit button in the tool bar above to produce my document.
+```
