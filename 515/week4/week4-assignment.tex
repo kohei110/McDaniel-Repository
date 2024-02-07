@@ -1,0 +1,252 @@
+% Options for packages loaded elsewhere
+\PassOptionsToPackage{unicode}{hyperref}
+\PassOptionsToPackage{hyphens}{url}
+%
+\documentclass[
+]{article}
+\usepackage{amsmath,amssymb}
+\usepackage{iftex}
+\ifPDFTeX
+  \usepackage[T1]{fontenc}
+  \usepackage[utf8]{inputenc}
+  \usepackage{textcomp} % provide euro and other symbols
+\else % if luatex or xetex
+  \usepackage{unicode-math} % this also loads fontspec
+  \defaultfontfeatures{Scale=MatchLowercase}
+  \defaultfontfeatures[\rmfamily]{Ligatures=TeX,Scale=1}
+\fi
+\usepackage{lmodern}
+\ifPDFTeX\else
+  % xetex/luatex font selection
+\fi
+% Use upquote if available, for straight quotes in verbatim environments
+\IfFileExists{upquote.sty}{\usepackage{upquote}}{}
+\IfFileExists{microtype.sty}{% use microtype if available
+  \usepackage[]{microtype}
+  \UseMicrotypeSet[protrusion]{basicmath} % disable protrusion for tt fonts
+}{}
+\makeatletter
+\@ifundefined{KOMAClassName}{% if non-KOMA class
+  \IfFileExists{parskip.sty}{%
+    \usepackage{parskip}
+  }{% else
+    \setlength{\parindent}{0pt}
+    \setlength{\parskip}{6pt plus 2pt minus 1pt}}
+}{% if KOMA class
+  \KOMAoptions{parskip=half}}
+\makeatother
+\usepackage{xcolor}
+\usepackage[margin=1in]{geometry}
+\usepackage{color}
+\usepackage{fancyvrb}
+\newcommand{\VerbBar}{|}
+\newcommand{\VERB}{\Verb[commandchars=\\\{\}]}
+\DefineVerbatimEnvironment{Highlighting}{Verbatim}{commandchars=\\\{\}}
+% Add ',fontsize=\small' for more characters per line
+\usepackage{framed}
+\definecolor{shadecolor}{RGB}{248,248,248}
+\newenvironment{Shaded}{\begin{snugshade}}{\end{snugshade}}
+\newcommand{\AlertTok}[1]{\textcolor[rgb]{0.94,0.16,0.16}{#1}}
+\newcommand{\AnnotationTok}[1]{\textcolor[rgb]{0.56,0.35,0.01}{\textbf{\textit{#1}}}}
+\newcommand{\AttributeTok}[1]{\textcolor[rgb]{0.13,0.29,0.53}{#1}}
+\newcommand{\BaseNTok}[1]{\textcolor[rgb]{0.00,0.00,0.81}{#1}}
+\newcommand{\BuiltInTok}[1]{#1}
+\newcommand{\CharTok}[1]{\textcolor[rgb]{0.31,0.60,0.02}{#1}}
+\newcommand{\CommentTok}[1]{\textcolor[rgb]{0.56,0.35,0.01}{\textit{#1}}}
+\newcommand{\CommentVarTok}[1]{\textcolor[rgb]{0.56,0.35,0.01}{\textbf{\textit{#1}}}}
+\newcommand{\ConstantTok}[1]{\textcolor[rgb]{0.56,0.35,0.01}{#1}}
+\newcommand{\ControlFlowTok}[1]{\textcolor[rgb]{0.13,0.29,0.53}{\textbf{#1}}}
+\newcommand{\DataTypeTok}[1]{\textcolor[rgb]{0.13,0.29,0.53}{#1}}
+\newcommand{\DecValTok}[1]{\textcolor[rgb]{0.00,0.00,0.81}{#1}}
+\newcommand{\DocumentationTok}[1]{\textcolor[rgb]{0.56,0.35,0.01}{\textbf{\textit{#1}}}}
+\newcommand{\ErrorTok}[1]{\textcolor[rgb]{0.64,0.00,0.00}{\textbf{#1}}}
+\newcommand{\ExtensionTok}[1]{#1}
+\newcommand{\FloatTok}[1]{\textcolor[rgb]{0.00,0.00,0.81}{#1}}
+\newcommand{\FunctionTok}[1]{\textcolor[rgb]{0.13,0.29,0.53}{\textbf{#1}}}
+\newcommand{\ImportTok}[1]{#1}
+\newcommand{\InformationTok}[1]{\textcolor[rgb]{0.56,0.35,0.01}{\textbf{\textit{#1}}}}
+\newcommand{\KeywordTok}[1]{\textcolor[rgb]{0.13,0.29,0.53}{\textbf{#1}}}
+\newcommand{\NormalTok}[1]{#1}
+\newcommand{\OperatorTok}[1]{\textcolor[rgb]{0.81,0.36,0.00}{\textbf{#1}}}
+\newcommand{\OtherTok}[1]{\textcolor[rgb]{0.56,0.35,0.01}{#1}}
+\newcommand{\PreprocessorTok}[1]{\textcolor[rgb]{0.56,0.35,0.01}{\textit{#1}}}
+\newcommand{\RegionMarkerTok}[1]{#1}
+\newcommand{\SpecialCharTok}[1]{\textcolor[rgb]{0.81,0.36,0.00}{\textbf{#1}}}
+\newcommand{\SpecialStringTok}[1]{\textcolor[rgb]{0.31,0.60,0.02}{#1}}
+\newcommand{\StringTok}[1]{\textcolor[rgb]{0.31,0.60,0.02}{#1}}
+\newcommand{\VariableTok}[1]{\textcolor[rgb]{0.00,0.00,0.00}{#1}}
+\newcommand{\VerbatimStringTok}[1]{\textcolor[rgb]{0.31,0.60,0.02}{#1}}
+\newcommand{\WarningTok}[1]{\textcolor[rgb]{0.56,0.35,0.01}{\textbf{\textit{#1}}}}
+\usepackage{longtable,booktabs,array}
+\usepackage{calc} % for calculating minipage widths
+% Correct order of tables after \paragraph or \subparagraph
+\usepackage{etoolbox}
+\makeatletter
+\patchcmd\longtable{\par}{\if@noskipsec\mbox{}\fi\par}{}{}
+\makeatother
+% Allow footnotes in longtable head/foot
+\IfFileExists{footnotehyper.sty}{\usepackage{footnotehyper}}{\usepackage{footnote}}
+\makesavenoteenv{longtable}
+\usepackage{graphicx}
+\makeatletter
+\def\maxwidth{\ifdim\Gin@nat@width>\linewidth\linewidth\else\Gin@nat@width\fi}
+\def\maxheight{\ifdim\Gin@nat@height>\textheight\textheight\else\Gin@nat@height\fi}
+\makeatother
+% Scale images if necessary, so that they will not overflow the page
+% margins by default, and it is still possible to overwrite the defaults
+% using explicit options in \includegraphics[width, height, ...]{}
+\setkeys{Gin}{width=\maxwidth,height=\maxheight,keepaspectratio}
+% Set default figure placement to htbp
+\makeatletter
+\def\fps@figure{htbp}
+\makeatother
+\setlength{\emergencystretch}{3em} % prevent overfull lines
+\providecommand{\tightlist}{%
+  \setlength{\itemsep}{0pt}\setlength{\parskip}{0pt}}
+\setcounter{secnumdepth}{-\maxdimen} % remove section numbering
+\ifLuaTeX
+  \usepackage{selnolig}  % disable illegal ligatures
+\fi
+\IfFileExists{bookmark.sty}{\usepackage{bookmark}}{\usepackage{hyperref}}
+\IfFileExists{xurl.sty}{\usepackage{xurl}}{} % add URL line breaks if available
+\urlstyle{same}
+\hypersetup{
+  pdftitle={week4\_assignment},
+  pdfauthor={Kohei Nishitani},
+  hidelinks,
+  pdfcreator={LaTeX via pandoc}}
+
+\title{week4\_assignment}
+\author{Kohei Nishitani}
+\date{2024-02-06}
+
+\begin{document}
+\maketitle
+
+{
+\setcounter{tocdepth}{2}
+\tableofcontents
+}
+\hypertarget{section-1-description-of-the-data}{%
+\subsection{Section 1: Description of the
+data}\label{section-1-description-of-the-data}}
+
+This
+\href{https://www.kaggle.com/datasets/harlfoxem/housesalesprediction/data}{dataset
+originates from King County, WA, USA}, contains a wide range of real
+estate sales data which is comprehensive details on homes sold within
+the county, featuring over 20 columns that captures various aspects of
+the propertes listed. The primary objective of utilizing this dataset is
+to analyze the real estate market trends in King County, focusing on
+factors that influence property prices. By examining attributes such as
+the size of the living space, number of bedrooms and bathrooms, and
+additional features like waterfront views and grade of the house, we can
+identify patterns and insights that are crucial for buyers, sellers, and
+investors in the housing market.
+
+\hypertarget{section-2-reading-the-data-into-r.}{%
+\subsection{Section 2: Reading the data into
+R.}\label{section-2-reading-the-data-into-r.}}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\CommentTok{\# set working directory}
+\FunctionTok{setwd}\NormalTok{(}\StringTok{"D:/Workspace/McDaniel{-}Repository/515/week4"}\NormalTok{)}
+
+\CommentTok{\# read csv and assign this to data variable, and specify the header}
+\NormalTok{data }\OtherTok{\textless{}{-}} \FunctionTok{read.csv}\NormalTok{(}\StringTok{\textquotesingle{}kc\_house\_data.csv\textquotesingle{}}\NormalTok{,}\AttributeTok{header=}\ConstantTok{TRUE}\NormalTok{)}
+\end{Highlighting}
+\end{Shaded}
+
+\hypertarget{section-3-clean-the-data}{%
+\subsection{Section 3: Clean the data}\label{section-3-clean-the-data}}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\NormalTok{cln\_data }\OtherTok{\textless{}{-}}\NormalTok{ data }\SpecialCharTok{\%\textgreater{}\%} 
+  \FunctionTok{mutate}\NormalTok{(}
+  \CommentTok{\# these variables should be factor not number data type}
+  \AttributeTok{id =} \FunctionTok{as.factor}\NormalTok{(id),}
+  \AttributeTok{waterfront =} \FunctionTok{as.factor}\NormalTok{(waterfront),}
+  \AttributeTok{condition =} \FunctionTok{as.factor}\NormalTok{(condition), }
+  \AttributeTok{view =} \FunctionTok{as.factor}\NormalTok{(view),}
+  \AttributeTok{zipcode =} \FunctionTok{as.factor}\NormalTok{(zipcode),}
+  \AttributeTok{yr\_renovated =} \FunctionTok{if\_else}\NormalTok{(yr\_renovated }\SpecialCharTok{==} \DecValTok{0}\NormalTok{, }\ConstantTok{NA\_integer\_}\NormalTok{, yr\_renovated),}
+  \AttributeTok{bedrooms =} \FunctionTok{as.numeric}\NormalTok{(bedrooms),}
+  \AttributeTok{sqft\_living =} \FunctionTok{as.numeric}\NormalTok{(sqft\_living),}
+  \AttributeTok{sqft\_living15 =} \FunctionTok{as.numeric}\NormalTok{(sqft\_living15),}
+  \AttributeTok{sqft\_lot =} \FunctionTok{as.numeric}\NormalTok{(sqft\_lot),}
+  \AttributeTok{sqft\_lot15 =} \FunctionTok{as.numeric}\NormalTok{(sqft\_lot15),}
+  \AttributeTok{sqft\_above =} \FunctionTok{as.numeric}\NormalTok{(sqft\_above),}
+  \AttributeTok{sqft\_basement =} \FunctionTok{as.numeric}\NormalTok{(sqft\_basement),}
+  \AttributeTok{yr\_built =} \FunctionTok{as.numeric}\NormalTok{(yr\_built),}
+
+\NormalTok{  ) }\SpecialCharTok{\%\textgreater{}\%}
+  \CommentTok{\# at least less than 100 years old houses}
+  \FunctionTok{filter}\NormalTok{(yr\_built }\SpecialCharTok{\textgreater{}} \DecValTok{1924}\NormalTok{) }\SpecialCharTok{\%\textgreater{}\%}
+  \CommentTok{\# select few relevant columns for convenience}
+  \FunctionTok{select}\NormalTok{(price, bedrooms, bathrooms, waterfront, grade)}
+\end{Highlighting}
+\end{Shaded}
+
+\hypertarget{section-4-characteristics-of-the-data}{%
+\subsection{Section 4: Characteristics of the
+data}\label{section-4-characteristics-of-the-data}}
+
+This real estate sales data contains rows and variables like (id, date,
+price, bedrooms, bathrooms, sqft\_living, sqft\_lot, floors, waterfront,
+view, condition, grade, sqft\_above, sqft\_basement, yr\_built,
+yr\_renovated, zipcode, lat, long, sqft\_living15, sqft\_lot15).\\
+This dataframe has 21613 rows and 21 columns. The names of the columns
+and a brief description of each are in the table below:
+
+\begin{longtable}[]{@{}
+  >{\raggedleft\arraybackslash}p{(\columnwidth - 4\tabcolsep) * \real{0.0631}}
+  >{\raggedright\arraybackslash}p{(\columnwidth - 4\tabcolsep) * \real{0.0541}}
+  >{\raggedright\arraybackslash}p{(\columnwidth - 4\tabcolsep) * \real{0.8829}}@{}}
+\caption{Column ID, Names and Descriptions}\tabularnewline
+\toprule\noalign{}
+\begin{minipage}[b]{\linewidth}\raggedleft
+Column Number
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedright
+Column Name
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedright
+Description
+\end{minipage} \\
+\midrule\noalign{}
+\endfirsthead
+\toprule\noalign{}
+\begin{minipage}[b]{\linewidth}\raggedleft
+Column Number
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedright
+Column Name
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedright
+Description
+\end{minipage} \\
+\midrule\noalign{}
+\endhead
+\bottomrule\noalign{}
+\endlastfoot
+1 & price & Price of each home sold \\
+2 & bedrooms & \# of bedrooms \\
+3 & bathrooms & \# of bathrooms \\
+4 & waterfront & A dummy variable for whether the apartment was
+overlooking the waterfront or not \\
+5 & grade & An index from 1 to 13, where 1-3 falls short of building
+construction and design, 7 has an average level of construction and
+design, and 11-13 have a high quality level of construction and
+design \\
+\end{longtable}
+
+\hypertarget{section-5-subset-and-summary}{%
+\subsection{Section 5 Subset and
+Summary}\label{section-5-subset-and-summary}}
+
+\begin{verbatim}
+##   Avg_Price Min_Price Max_Price Avg_Bedrooms Min_Bedrooms Max_Bedrooms
+## 1  534435.3     75000   7062500     3.393391            0           33
+##   Avg_Grade Min_Grade Max_Grade
+## 1  7.720437         1        13
+\end{verbatim}
+
+\end{document}
