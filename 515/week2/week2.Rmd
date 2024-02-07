@@ -1,0 +1,47 @@
+---
+title: "ANA 515 Assignment 1"
+author: Kohei Nishitani
+output: 
+  html_document:
+    theme: flatly
+---
+
+```{r setup, include=FALSE}
+library(bslib)
+library(knitr)
+library(tidyverse)
+library(readr)
+knitr::opts_chunk$set(echo = TRUE)
+
+```
+
+```{r data-setup, include=FALSE}
+library(tidyverse)
+
+url <- "https://raw.githubusercontent.com/fivethirtyeight/data/master/fifa/fifa_countries_audience.csv"
+data <- read_csv(url)
+smallpops <- data %>%
+  filter(population_share <= 0.7)
+```
+
+```{r summary-smallpops, echo=FALSE}
+summary(smallpops)
+```
+
+We have data about `r nrow(data)` countries. Only `r nrow(smallpops)` have a population share of less than 0.7. The distribution of this is shown below:
+
+```{r pop-dist, message=FALSE, echo=FALSE}
+ggplot(smallpops, aes(x = population_share)) +
+  geom_histogram(fill = "blue", color = "white", binwidth = 0.1) +
+  labs(title = "Population Sharee",
+       x = "Population Share",
+       y = "Count")
+```
+
+```{r gdp-dist, message=FALSE, echo=FALSE}
+ggplot(smallpops, aes(x = gdp_weighted_share)) +
+  geom_histogram(fill = "pink", color = "black", binwidth = 0.1) +
+  labs(title = "GDP weighted share",
+       x = "GDP weighted share",
+       y = "Count")
+```
