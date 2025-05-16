@@ -1,4 +1,4 @@
-setwd("~/Workspace/mcdaniel/500/mid-term1")
+# setwd("~/Workspace/mcdaniel/500/mid-term1")
 # install.packages("plyr")
 library(plyr)
 library(ggplot2)
@@ -76,6 +76,8 @@ print(shapiro_test_result)
 # first True
 # second False
 
+mean(correctHousing$MEDV)
+
 # QUESTION 7 Failed
 # Generate a frequency plot (histogram) for the variable “CMEDV," 
 # i.e. the median value of owner-occupied homes, and answer the following questions.
@@ -145,6 +147,7 @@ print(spearman_coefficient)
 # True or False
 # First False
 # Second True
+
 # QUESTION 12
 
 # Enter yes if you have read and understand the content of this question.  
@@ -238,7 +241,7 @@ print(spearman_coefficient)
 # QUESTION 16 
 # What is the value of the correlation coefficient for crim and Istat?
 coefficient <- cor(correctHousing$crim, correctHousing$lstat)
-print(p19_coefficient) # [1] 0.46
+print(coefficient) # [1] 0.46
 
 # QUESTION 17 Spoints Save Answer
 # There is a [A] relationship between crim and Istat. 

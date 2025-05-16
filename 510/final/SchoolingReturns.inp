@@ -1,0 +1,65 @@
+#
+#ANA 510 Final Exam Part V
+#  
+
+open \
+  "/Users/nkohei/Workspace/McDaniel-Repository/510/final/SchoolingReturns2.csv"
+  
+
+logs wage
+square experience
+list x = education sq_experience ethnicity smsa south age nearcollege
+summary x
+scalar oobs = $nobs
+oobs
+
+freq wage --plot=display
+freq l_wage --plot=display
+freq education --plot=display
+freq experience --plot=display
+freq nearcollege --plot=display
+
+set seed 3216472
+m_ols <- ols l_wage const x
+modeltab add 
+
+#Save the sum of squares error
+sse_ln = $ess
+#
+#Save the residuals to plot to verify assumptions
+#
+series uhat1_ln = $uhat
+qqplot uhat1_ln --output=display
+
+#
+#Unfortunately, this model is problematic for a number of reasons, not least of which is that
+#education is endogenous (and thus also experience is coded as age - education - 6).  So let's
+#go to a TSLS Regression.
+#
+#
+#Let's go with a simpler TSLS Regression first and then try more complex ones.
+#
+#The first, simpler TSLS Regression takes advantageous of what we know about the relationship
+#between education, experience and age.  
+
+square age
+m_tsls <- tsls l_wage 0 education sq_experience ethnicity smsa south ; 0 \
+  nearcollege sq_age ethnicity smsa south --robust
+modeltab add
+
+#Save the sum of squares error
+sse_tsls = $ess
+#
+#Save the residuals to plot to verify assumptions
+#
+series uhat1_tsls = $uhat
+qqplot uhat1_tsls --output=display
+
+#
+#Don't forget to change the path to where you want the output from your models saved on
+#your computer.  Also, if you run this script several times you must close the Word doc
+#with your model table between runs or you will get an error message.  
+modeltab --output="/Users/nkohei/Workspace/McDaniel-Repository/510/final/SchoolingReturnsModelTab.rtf"
+
+
+

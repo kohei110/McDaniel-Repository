@@ -1,0 +1,199 @@
+#
+#Script for Final Exam using the Pima Indians Diabetes dataset
+#
+
+#
+#
+#Open the data file and look at the data then compute some descriptive statistics
+#
+#
+
+
+#
+#*********************************
+#Question 1
+#*********************************
+#
+#
+#Feel free to use code snippet or snippets from this section or use the code below as a 
+#guide for creating your own code snippets in gretl, or pursue however you want
+#to solve the related questions
+#
+#
+
+
+open \
+  "/Users/nkohei/Workspace/McDaniel-Repository/510/final/diabetes.gdt"
+
+scalar oobs = $nobs
+oobs
+
+labels
+info
+summary
+
+#
+#Let's find out some more about the data
+
+meanGlu = mean(Glucose)
+
+smpl Outcome==1 --restrict
+o1_obs = $nobs
+printf "\nThe number of Pima Indians in the dataset with diabetes is %.2f.\n",o1_obs
+
+proportion_o1 = o1_obs/oobs
+o1_mean_Glu = mean(Glucose)
+printf "\nThe proportion of Pima Indians in the dataaset with diabetes is %.2f.\n",proportion_o1 
+printf "\nThe average measured Glucose of all Pima Indians in the dataset is %.2f.\n",o1_mean_Glu
+
+smpl full
+
+
+#Do some work to set things up for a function to generate marginal effects for this model.  
+
+function matrix ame_binary(matrix *b "parameter estimates",
+      list x "Variables list",                          
+      int dist[1:2:2] "distribution" )
+# Computes average marginal effects for probit or logit      
+    matrix p = lincomb(x, b)       # The index function
+    matrix d = (dist==1) ? exp(-p)./(1.+exp(-p)).^2 : dnorm(p)
+    matrix ame_matrix = d*b'
+    cnameset(ame_matrix, x)            # add column names
+    matrix amfx = meanc(ame_matrix)    # find the means
+    cnameset(amfx, x)                  # add the column names to amfx
+    printf "\n Average Marginal Effects (AME):\
+      \n Variables: %s\n%12.4g \n", varname(x), amfx
+    return amfx
+end function
+
+
+function matrix ame_cov (matrix b "parameter estimates",
+      matrix covmat "Covariance",
+      list x "Variables list",
+      int dist[1:2:2] "distribution" )
+    # Computes std errs for AME probit/logit
+    # Requires ame_binary      
+    matrix amfx = ame_binary(&b, x, dist)
+    matrix jac = fdjac(b, ame_binary(&b, x , dist))
+    matrix variance = qform(jac,covmat)
+    matrix se = sqrt(diag(variance))
+    matrix results = amfx' ~ se
+    rnameset(results, "b")
+    cnameset(results, "AME StdErr")
+    if dist == 1
+        printf "Logit:\n"
+    else
+        printf "Probit:\n"
+    endif
+    printf "%10.4f\n", results   
+    return amfx|variance
+end function
+
+
+function scalar p_binary(matrix b "parameter estimates",
+      matrix x "Representative Point",               
+      int dist[1:2:2] "distribution" )
+    # Computes the probability of a binary choice: 1 = logit
+    scalar p = x*b                  # The index function
+    scalar d = (dist==1) ? 1./(1.+exp(-p)) : cnorm(p) 
+    return d
+end function
+
+
+
+function void Probs (matrix b "parameter estimates",
+      matrix covmat "Covariance",
+      matrix x "Representative Point",
+      scalar df "Degrees of Freedom", 
+      int dist[1:2:2] "distribution")
+    # Function computes std errors of binary predictions
+    # Requires p_binary
+    scalar p = p_binary(b, x, dist)
+    matrix jac = fdjac(b, p_binary(b, x , dist))
+    matrix variance = qform(jac,covmat)
+    matrix se = sqrt(diag(variance))
+    scalar crit = critical(t,df,0.025)
+    matrix results = (p-crit*se) ~ p ~ (p+crit*se) ~ se
+
+    if dist == 1
+        printf "Logit:\n"
+    else
+        printf "Probit:\n"
+    endif
+
+    printf "95%% t(%.2g) confidence interval for probability at\n\
+    x = %8.4f\n", df, x
+    cnameset(results, " Lower ME Upper StdError" ) 
+    printf "%10.4f\n", results
+end function
+
+#
+#********************************************************************************************
+#Question 2
+#********************************************************************************************
+#
+#Build a logit model for Outcome as a function of Glucose for this dataset. 
+#First consider one independent variable, Glucose
+
+
+list x = const Glucose 
+list XL = const Glucose
+matrix x_av = { 1 , 2 }
+
+model1 <- logit Outcome x 
+matrix lp = $coeff
+scalar dist = ($command == "logit")? 1 : 2
+Probs(lp,$vcv,x_av,$df,dist)
+
+#model1 <- logit Outcome x --vcv --p-values
+modeltab add
+
+matrix bp = $coeff
+matrix b = $coeff
+matrix covmat = $vcv
+
+printf "\nFor the first model, Glucose is the independent variable: \n"
+scalar dist = ($command == "logit")? 1 : 2
+matrix c=ame_cov(bp,$vcv,x,dist)
+t_interval_m(c[1,]',c[-1,],$df,.95)
+
+
+#Computes the Average Marginal Effect for the "2nd" variable in x output 
+series me = dnorm(lincomb(x,b))*b[2] 
+scalar amf = mean(me)
+scalar sd_amf = sd(me)
+printf "\nThe average marginal effect for change in Glucose = %6.4f\n", amf
+printf "\n"
+printf "\n"
+printf "\n"
+printf "For the average marginal effect the summary statistics are: \n"
+summary me --simple
+
+#*******************************************************************************************
+#Now consider the multivariable regression using all available independent variables
+#********************************************************************************************
+
+list Z = const Pregnancies Glucose BloodPressure SkinThickness Insulin BMI DiabetesPedigreeFunction Age
+
+model2 <- logit Outcome Z --multinomial
+modeltab add
+
+matrix bp = $coeff
+matrix b = $coeff
+matrix covmat = $vcv
+
+#Computes the AME for the "3nd" variable in x in this case Glucose again
+#Note this is different because all independent variables are used 
+#rather than Glucose alone.  
+series me = dnorm(lincomb(Z,b))*b[3]   
+scalar amf = mean(me)
+printf "\nThe average marginal effect for change in Glucose = %6.4f\n", amf
+printf "\n"
+printf "\n"
+printf "\n"
+printf "For the average marginal effect the summary statistics are: \n"
+summary me --simple
+
+
+
+

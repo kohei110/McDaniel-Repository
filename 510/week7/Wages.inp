@@ -1,0 +1,369 @@
+#gretl script for the wage dataset
+#
+#NOTE!!! You may want to highlight and run Part 1 by itself and then highlight and run Part 2.
+#when you are ready to analyze the results of Part 2.  Be sure to save at least the gretl output
+#from both parts so you can refer to each part for comparison.  
+
+open \
+  "/Users/nkohei/Workspace/McDaniel-Repository/510/week7/wageDataset.gdt"
+
+
+#
+#If you run the entire script all at one time when gretl opens the second dataset (Part 2) it 
+#will close all the windows of graphs/figures you have from Part 1.  
+  
+#
+#Let's start with an example of what we have already done several times.  Then, we'll move onto
+#the new material we're adding to model building, i.e. instrumental variables.  
+
+scalar oobs = $nobs
+oobs
+
+labels
+info
+summary
+
+#
+#Let's check for linearity in the data
+gnuplot wage educ --fit=linear --output=display
+#Hmmm I guess that looks kind-of linear but it is hard to tell
+
+#
+#Let's check for normality in the data
+freq wage --nbins=31 --normal --plot=display
+freq educ --nbins=31 --normal --plot=display
+
+#
+#We see that (as we can expect) wages is not normal.  However, the education data is relatively 
+#normal with the mean of 12 or a high school education.  There are more with higher levels
+#or years of education or than there are those who do not complete high school.  Let's go 
+#on to a simple (least squares) regression
+model_lin <- ols wage 0 educ
+
+
+#Save the sum of squares error
+sse_l = $ess
+#
+#Save the residuals to plot to verify assumptions
+#
+series uhat1_l = $uhat
+gnuplot uhat1_l educ --output=display
+
+#modtest --normality
+#modtest --logs
+#modtest --breusch-pagan
+
+#
+#We can use the plot of residuals to see that something is wrong.  This plot does not
+#show an even distribution of residuals.  We need to work on that.  Among other things,
+#this indicates that we have violated at least one of the assumptions for simple regression.  
+#In addition, the R-squared tells us that this model explains very little of the data.  
+#You should be sure that you understand the other types of tests we've run, i.e. those using 
+#the command modtest.  I've had trouble using them with the current dataset.  That happens  
+#These will be used regardless of whether we are running gretl or any other program that 
+#tests the results of an ordinary least squares regression. 
+
+#
+#Now we want to take advantage of the information we have in our dataset.  Let's consider what 
+#how being in different gender or ethnic groups impact how education affects wages.  
+#Let's start with the gender female, then male, then black, then white.  Remember that in order
+#to get the all the observations related to the group you want that you have to return to the
+#full sample before you put a restriction on the data. Also, for the ethnic group 'white'
+#you need to exclude both groups black and asian. 
+
+smpl female == 1 --restrict
+modelF <- ols wage 0 educ
+
+smpl full
+smpl female == 0 --restrict
+modelM <- ols wage 0 educ
+
+smpl full
+smpl black == 1 --restrict
+modelB <- ols wage 0 educ
+
+smpl full
+smpl black == 0 --restrict
+smpl asian == 0 --restrict
+modelW <- ols wage 0 educ
+
+smpl full
+
+#Now look at the models for these groups.  You'll need to either copy and paste/modify code or
+#use gretl's menus to build models for each of these.  What affect does being a member of these
+#group have on wages?  
+
+#
+#Let's look at a quadratic model for these data.  First, generate an education-squared variable.
+#Then, build a model for wages from it.
+square educ
+model_sq <- ols wage 0 sq_educ
+
+#
+#Next compute the marginal effect of another year of education for a person with 12 years of 
+#education (high school) and for a person with 14 years of education (an associates degree).
+#How does the education-squared model's marginal effect of education differ from your
+#computation of the estimated martinal effect of education from the original linear regression?
+
+#To compute the estimated marginal effect for the education-squared model we have to compute the
+#derivative of the education-squared term.  From the model, wage-hat = 6.08289 + 0.073489EDUC-squared
+#that will be 2 * 0.073489 * educ.  So, when education equals 12 years we use 12 for the variable
+#education to get 2 * 0.073489 * 12 or about an increase of $1.76.  How much of an increase is 
+#there for one year beyond 14 years of education?  
+
+#When you take the derivative of the educ term in the linear model you find that regardless
+#of the number of years of education there is an increase of $1.98.  So, the education-squared
+#model shows larger increases in wages with increasing levels (years) of education.  Ok?
+
+#
+#Last thing for the quadratic model, let's look at the linear versus the quadratic models 
+#plotted against the data. The linear model was plotted earlier.  
+gnuplot wage educ --fit=quadratic --output=display
+
+#Honestly, neither the linear or quadratic model look that great to me.
+
+#
+#Given a right skewed variable we commonly take the natural log of the variable to try to
+#get a more normal distribution.  Let's do that now and look at the resulting distribution. 
+logs wage
+freq l_wage --nbins=31 --normal --plot=display
+
+#Ok, that definitely looks more like a normal distribution.  
+
+#
+#Now build a model using the natural log of wage and both educ and education-squared.  
+#Compare these results with your previous results using wage without taking the natural log.
+model_loglin <- ols l_wage 0 educ
+
+#Save the sum of squares error
+sse_l = $ess
+#
+#Save the residuals to plot to verify assumptions
+#
+series uhat1_l = $uhat
+gnuplot uhat1_l educ --output=display
+
+#Computing the marginal effects of the model_ln, the new wage rates are given by an increase of 
+#about exp(1.60944 + 0.090408 * educ) for the model_ln model.  Be sure you understand how this
+#is computed.  For someone with 12 years of education, adding an additional year of education will 
+#increase their salary by $14.796.  For someone with 14 years of education, adding an additional 
+#year of education will increase their salary by 17.728.  
+
+model_logsq <- ols l_wage 0 sq_educ
+
+#Save the sum of squares error
+sse_l = $ess
+#
+#Save the residuals to plot to verify assumptions
+#
+series uhat1_l = $uhat
+gnuplot uhat1_l sq_educ --output=display
+
+#NOTE!!! Because we are working with marginal effects here we are working in dollars and cents rather
+#than in percentages which we will be in other cases.  Be sure you understand the difference between
+#computing what the increase in wage rate due to marginal effects and what actual martinal effects
+#is.  
+#
+
+#For comparison let's build another OLS model with this dataset
+
+square exper
+model_comp1 <- ols l_wage 0 educ exper sq_exper --vcv
+
+#
+#Be sure to save the output from Part 1 so you can compare this model to the model first built
+#using the dataset for Part 2.  As you'll see there are some differences but not too much.  
+
+#
+#This is as far as we'll go with model building the way we are used to doing it.  Let's move
+#on to using Two Stage Least Squares (TSLS) Regression.  To do so we'll need to consider
+#what we'll use for instrumental variables.  You can check the home screen for gretl which 
+#lists all the variables available in the data.  From the literature an instrumental variable
+#is one that can be latent, i.e. unmeasured.  However, all the variables in the dataset are
+#ones that have been measured.  Is it possible that we have omitted a variable from the data?
+#Do you see a variable or variables in the data that will affect wage?
+#
+#
+#Because I want to include additional variables in the model, I'm going to do what I see
+#others doing, i.e. switching datasets on you.  So, be sure to add the mroz.gdt data file
+#to wherever you save your data.  And, modify the path to that data file in the open
+#statement below.  Apologies for any confusion.  
+
+
+open \
+   "/Users/nkohei/Workspace/McDaniel-Repository/510/week7/mroz.gdt"
+
+scalar oobs = $nobs
+oobs
+
+labels
+info
+summary
+
+#
+#Let's check for normality in the data
+freq wage --nbins=31 --normal --plot=display
+
+#The variable I immediately see that will directly affect wages is EXPER or years of experience.
+#I believe that this should affect wage and therefore is an omitted variable.  Let's rebuild the 
+#model including experience.  We'll go back to the beginning and use EDUC rather than education-squared.  
+#However, we'll square experience and include both exper and sq_exper.  We'll also save the usual 
+#output from the model and plot the residuals to check them for fit.  
+
+#
+#To be thorough let's look at the ordinary least squares solution for this dataset before we
+#move onto TSLS Regression.  
+
+logs wage
+square exper
+square educ
+
+#
+#Don't forget to subset the data to include only the 428 women in the labor force.
+
+smpl lfp == 1 --restrict
+model_comp2 <- ols l_wage 0 educ exper sq_exper
+
+#
+#Compare the output from model_comp to model_ln_sq2.  These are two different datasets.
+#However, they result in close to the same conclusion.  For example, in model_comp each year
+#of additional education increases the wage rate by about 10.75%.  In model_ln_sq2, we can
+#estimate that each year of additional education increases the wage rate by about 10.75%. 
+#Education is an important part of social and policy for countries and individuals.  This
+#is still true even though getting an education has been spun to seem like more of a bad
+#thing by many today.  Anyway, other variables are a bit further apart.  For comparable 
+#variables and models the results are pretty comparable.  
+
+#Verifying the validity of data is an important part of conducting reproducible research.
+#Please, please keep that in mind as you conduct your own research!  
+
+#As we begin considering Two Stage Least Squares (TSLS) Regression here are some things
+#to keep in mind.  First, problems for least squares arise when x is random and correlated with
+#error (the error term).  This will make some assumptions invalid.  However, if there is
+#another variable, an instrumental variable, such that:
+#1. the variable you are considering to be an instrumental variable does not have a direct effect
+# on your dependent variable.  If it does not then it does not belong on the right-hand
+# side of the equation as an independent or explanatory variable of any kind.
+#2. an instrumental variable that is NOT correlated with the regression error term is exogenous.
+#3. an instrumental variable that is strongly (or at least not weakly) correlated with the independent
+# term x can be treated as an endogenous explanatory variable.  
+#
+#
+#Let's go through an example.  We'll start with a wage equation and assume that women whose 
+#mothers are more educated are likely to be more educated themselves.  We start with a first 
+#stage equation for educ.  
+#
+#
+#**********************
+#If things were simpler we could just do this by hand.  One alternative is to do this 
+#using gretl's built in menus.  Here I'm providing you with the code to do both 
+#stages of TSLS Regression.  To summarize we generated a first stage equation for the
+#explanatory variable education that we believe mothereduc is related to.  Then, we
+#generated a second stage equation to build the log(wage) model.  Go carefully through
+#the output.  You'll see education is now an explanatory variable.  What gretl does
+#in the background is take the output from the first-stage model for educ and put that
+#all together in the term for educ in the log(wage) equation.  
+#
+#
+#To begin a Two-stage Least Squares Regression you start the first stage by developing
+#a regression equation with your variable of interest as the dependent variable and 
+#include your instrument or instruments as independent or explanatory variables.
+#
+#
+#In this case we'll use educ, or the woman's education, as the dependent variable.
+#Note that the variable we have chosen to use as an instrumental variable, mothereduc, is
+#very statistically significant.  So, even after accounting for the other variables, exper and
+#sq_exper, we expect that mothereduc is correlated with the endogenous variable educ.
+
+
+model_educ1 <- ols educ 0 exper sq_exper mothereduc
+
+
+#Now, to implement the second stage of the two-stage least-squares regression we need to
+#substitute the values for education we have now into the equation for log(wage), i.e. the 
+#log-linear wage equation and complete building the model.  We set this up in gretl as
+#follows:
+
+list xlist = const educ exper sq_exper
+list instruments = const exper sq_exper mothereduc
+model_tsls1 <- tsls l_wage xlist ; instruments
+
+ols educ instruments --quiet
+omit mothereduc --test-only
+
+#
+#One thing to notice is that the coefficient of educ, 0.0493 or 4.93%, is much lower than
+#the coefficient of educ from the previous models where we found that the coefficient of educ
+#was 0.10749 or about 10.75%.  This is consistent with the situation in which the least squares
+#estimator tends to overestimate the effect of an explanatory variable if it is positively
+#correlated with an omitted factor in the error (error term).  Another thing you should notice 
+#is that the standard error for the educ term is much greater than it was in the original OLS 
+#model.  This reflects the fact even with a good instrument the TSLS Regression is not efficient.  
+#More data or a stronger instrumental variable might help this.  
+#
+#
+#Pay attention to the output from this TSLS Regression Model.  We've tested for a couple 
+#things.  First, we see from the Hausman test that the OLS estimates are consistent. That's
+#a very good thing.  Remember that when I originally tried to run a TSLS Regression with 
+#another dataset I got the message that the model had inconsistencies.  
+#
+#
+#If the explanatory variable is correlated with the regression error term the least squares
+#estimator fails!  If a strong instrumental variable is available then the IV estimator
+#is consistent and will be approximately normally distributed in large samples.  If you use
+# a weak or invalid instrument then the IV estimation can be as bad as or worse than the 
+#least squares estimator.  So, 
+#1. Can you test for whether or not an x is correlated with the error term?
+#2. Can you test to see if your instrument is valid and uncorrelated with the regression
+#  error?
+#
+#
+#Unfortunately, not every instrument can be tested for validity.  
+#
+#Second, look at the results from the Weak instrument test.  What is the F-statistic?
+#Is it greater than or less than the threshold value of 10.  
+
+model_educ2 <- ols educ 0 exper sq_exper mothereduc fathereduc
+
+list xlist = const educ exper sq_exper
+list instruments = const exper sq_exper mothereduc fathereduc
+model_tsls2 <- tsls l_wage xlist ; instruments
+
+ols educ instruments --quiet
+omit mothereduc fathereduc --test-only
+
+#Save the sum of squares error
+sse_l = $ess
+#
+#Save the residuals to plot to verify assumptions
+#
+series uhat1_l = $uhat
+gnuplot uhat1_l exper --output=display
+
+#The residuals (plotted against exper) are actually looking quite a bit better. Wage is still
+#considerably right skewed.  
+#
+#
+#You will need to continue to pay attention to verifying assumptions, etc.  Here I've 
+#commented out some of them so we can focus on the TSLS Regression process. 
+#
+#
+#Now consider all the data provided by this model, the model that includes instruments
+#mothereduc and fathereduc.  What is the F-statistic?  Is it greater or less than the 
+#threshold, rule-of-thumb, of 10?  If so we can conclude that at least one instrument
+#is not weak.  
+#
+#
+#Unfortunately, now it isn't a good idea to continue to use R-squared as a measure of how well
+#a model fits the data.  This is because when there are endogenous variables on the right-hand
+#side of a regression equation the concept of how well the variation in y is explained by x 
+#variables breaks down.  This is well known.  If desired you can look for additional 
+#information about this online.
+#
+#
+#
+#
+#
+#
+#There is much more to be learned about 2SLS Regression and all the tests that can be done.  
+

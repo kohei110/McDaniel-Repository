@@ -1,0 +1,91 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE gretldata SYSTEM "gretldata.dtd">
+
+<gretldata version="1.4" name="layoffs" frequency="1" startobs="1" endobs="50" type="cross-section">
+<description>Data imported from Excel file 'Layoffs.xlsx', 2021-02-24 21:25
+</description>
+<variables count="8">
+<variable name="Weeks"
+/>
+<variable name="Age"
+ label="Age of the person"
+ displayname="Age"
+/>
+<variable name="Educ"
+ label="Number of years of education"
+ displayname="Education"
+/>
+<variable name="Married"
+ label="1 if married, 0 otherwise"
+ displayname="Married"
+/>
+<variable name="Head"
+ label="1 if head of household, 0 otherwise"
+ displayname="Head of Household"
+/>
+<variable name="Tenure"
+ label="Number of years on the previous job"
+ displayname="Tenure"
+/>
+<variable name="Manager"
+ label="1 if management occupation, 0 otherwise"
+ displayname="Manager"
+/>
+<variable name="Sales"
+ label="1 if sales occupation, 0 otherwise"
+ displayname="Sales"
+/>
+</variables>
+<observations count="50" labels="false">
+<obs>37 30 14 1 1 1 0 0 </obs>
+<obs>62 27 14 1 0 6 0 0 </obs>
+<obs>49 32 10 0 1 11 0 0 </obs>
+<obs>73 44 11 1 0 2 0 0 </obs>
+<obs>8 21 14 1 1 2 0 0 </obs>
+<obs>15 26 13 1 0 7 1 0 </obs>
+<obs>52 26 15 1 0 6 0 0 </obs>
+<obs>72 33 13 0 1 6 0 0 </obs>
+<obs>11 27 12 1 1 8 0 0 </obs>
+<obs>13 33 12 0 1 2 0 0 </obs>
+<obs>39 20 11 1 0 1 0 0 </obs>
+<obs>59 35 7 1 1 6 0 0 </obs>
+<obs>39 36 17 0 1 9 1 0 </obs>
+<obs>44 26 12 1 1 8 0 0 </obs>
+<obs>56 36 15 0 1 8 0 0 </obs>
+<obs>31 38 16 1 1 11 0 1 </obs>
+<obs>62 34 13 0 1 13 0 0 </obs>
+<obs>25 27 19 1 0 8 0 0 </obs>
+<obs>72 44 13 1 0 22 0 0 </obs>
+<obs>65 45 15 1 1 6 0 0 </obs>
+<obs>44 28 17 0 1 3 0 1 </obs>
+<obs>49 25 10 1 1 1 0 0 </obs>
+<obs>80 31 15 1 0 12 0 0 </obs>
+<obs>7 23 15 1 0 2 0 0 </obs>
+<obs>14 24 13 1 1 7 0 0 </obs>
+<obs>94 62 13 0 1 8 0 0 </obs>
+<obs>48 31 16 1 0 11 0 0 </obs>
+<obs>82 48 18 0 1 30 0 0 </obs>
+<obs>50 35 18 1 1 5 0 0 </obs>
+<obs>37 33 14 0 1 6 0 1 </obs>
+<obs>62 46 15 0 1 6 0 0 </obs>
+<obs>37 35 8 0 1 6 0 0 </obs>
+<obs>40 32 9 1 1 13 0 0 </obs>
+<obs>16 40 17 1 0 8 1 0 </obs>
+<obs>34 23 12 1 1 1 0 0 </obs>
+<obs>4 36 16 0 1 8 0 1 </obs>
+<obs>55 33 12 1 0 10 0 1 </obs>
+<obs>39 32 16 0 1 11 0 0 </obs>
+<obs>80 62 15 1 0 16 0 1 </obs>
+<obs>19 29 14 1 1 12 0 0 </obs>
+<obs>98 45 12 1 0 17 0 0 </obs>
+<obs>30 38 15 0 1 6 0 1 </obs>
+<obs>22 40 8 1 1 16 0 1 </obs>
+<obs>57 42 13 1 0 2 1 0 </obs>
+<obs>64 45 16 1 1 22 0 0 </obs>
+<obs>22 39 11 1 1 4 0 0 </obs>
+<obs>27 27 15 1 0 10 0 1 </obs>
+<obs>20 42 14 1 1 6 1 0 </obs>
+<obs>30 31 10 1 1 8 0 0 </obs>
+<obs>23 33 13 1 1 8 0 0 </obs>
+</observations>
+</gretldata>

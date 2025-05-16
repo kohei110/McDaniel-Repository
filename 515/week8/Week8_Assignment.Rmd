@@ -1,0 +1,139 @@
+---
+title: "Week8 Credit Card Fraud Detection Dataset"
+author: "Kohei Nishitani"
+date: "2024-03-04"
+output: html_document
+---
+
+### 1.	Discuss the business problem/goal
+
+In the realm of financial services, identifying fraudulent transactions is a key element in protecting businesses. However, if fraud detection systems wrongly stop trustworthy transactions, this can lead to a poor customer experience, which may result in customer churn in the future. Hence, having an accurate fraud detection model is crucial to sustain and protect both the business and customer experience
+
+
+
+### 2. Identify where the dataset was retrieved from
+
+This original dataset is retrieved from some credit card company's data and stored at [Kaggle](https://www.kaggle.com/datasets/mlg-ulb/creditcardfraud).
+
+> The dataset contains transactions made by credit cards in September 2013 by European cardholders.
+
+
+### 3.	Identify the code that imported and saved your dataset in R
+```{r library, echo=FALSE, include=FALSE}
+library(tidyverse)
+library(caret)
+library(caTools)
+library(pROC)
+```
+
+```{r readcsv, include=TRUE}
+# set working directory
+setwd("~/Workspace/McDaniel-Repository/515/week8")
+data <- read.csv("creditcard.csv")
+```
+
+### 4. Describe your dataset
+
+This dataset has `r nrow(data)` credit card transactions with `r ncol(data)` variables. Due to confidentiality, most variables are already preprocessed using PCA, except for 'Time' and 'Amount'. Here's a sample of the dataset(pick up couple preprocessed columns as sample):
+
+```{r sample_data, echo=FALSE}
+# create sample dataset for visualization
+sample_data <- data %>%
+  select(Time, V1, V2, V28, Amount, Class) %>%
+  head(5)
+sample_data
+```
+
+and these are basic dataset summaries
+```{r smy_data, echo=FALSE}
+summary(sample_data)
+str(sample_data)
+```
+
+### 5. Discuss any data preparation
+
+This dataset has `r which(is.na(data))` NA value, it indicates this dataset is 
+already preprocessed well. However, Amount and other columns has different unit,
+so we should use scale() to standardize.
+
+```{r preprocess, echo=TRUE}
+# standardized Ammount column
+data$Amount=scale(data$Amount)
+
+# remove Time col since it's not major feature for this modeling
+newdata=data[,-c(1)]
+```
+
+### 6. Modeling
+
+To detect fraudulent transaction, using Logistic regression as a primary model. 
+Firstly use [caTools](https://cran.r-project.org/web/packages/caTools/index.html) 
+and split dataset into train and test set by 80% vs 20%. 
+
+```{r split, echo=TRUE}
+
+# set seed for randomisation for dataset split
+set.seed(123)
+
+# assign split label
+data_sample = sample.split(newdata$Class,SplitRatio=0.80)
+# create new variables based on split label
+train_data = subset(newdata,data_sample==TRUE)
+test_data = subset(newdata,data_sample==FALSE)
+```
+
+train dataset has `r nrow(train_data)` rows for training and  `r nrow(test_data)` 
+for training and those input data is standardized dataset.
+Because the target variable is binary(fraud or not), employ logistic regression model.
+Logistic regression uses logistic function to transform the output of the 
+linear function into a probability value(fraud or not).
+
+
+```{r glm, echo=TRUE}
+# Since we want to predict Class(0 or 1), put Class on the left hand side, and 
+# use train_data for fitting(changed from linked website, doesn't make sense using test set for training.) 
+# Also we set family as binominal() to tell model target is binary.
+Logistic_Model <- glm(Class ~ ., data = train_data, family = binomial())
+
+```
+
+### 7. Result and Performance
+Produce and discuss the results of the modeling. Was the modeling accurate? How do you know how well the modeling worked?
+
+Let's check each feature's coefficients.. we could find couple features are 
+statistically significant.
+```{r coef_result, echo=TRUE}
+# get details of model
+summary(Logistic_Model)
+```
+
+
+Set 0.5 as threshold and check the confusion matrix for model performance.
+```{r conf_matx}
+
+
+# use trained model for test dataset
+predictions <- predict(Logistic_Model, newdata = test_data, type = "response")
+# set a threshold to determine binary result
+predicted_class <- ifelse(predictions > 0.5, 1, 0) 
+
+# generate confusionMatrix
+confusionMatrix(data = as.factor(predicted_class), reference = as.factor(test_data$Class))
+```
+
+Given above result, this model demonstrates high accuracy (99.92%) with exceptional Recall(Sensitivity) (99.99%), indicating it's very effective at identifying legitimate transactions.
+
+
+
+
+### 8. Visualization
+A ROC plot is powerful visualization for evaluating model performance, since it visually represents the trade-off between the true positive rate and the false positive rate (1-specificity) across various thresholds.
+
+```{r viz, echo=TRUE}
+# get predicted result
+lr.predict <- predict(Logistic_Model, newdata = test_data, type = "response")
+
+# use test data label and predicted label for ROC plot
+auc.gbm = roc(test_data$Class, lr.predict, plot = TRUE, col = "blue")
+```
+

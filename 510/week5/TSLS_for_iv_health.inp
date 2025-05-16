@@ -1,0 +1,32 @@
+#gretl script for the IV Health dataset
+
+open \
+  "I:\My Passport Documents\McDaniel\DataAnalytics\ANA510\Assignments\PS4\iv_health.gdt"
+summary logmedexpense
+summary healthinsu
+summary illnesses age logincome
+summary ssiratio
+
+#Conduct an OLS regression using logmedexpenses as the dependent variable
+#and healthinsu, illnesses, age and logincome as the independent variables
+#save this as model1
+model1 <- ols logmedexpense 0 healthinsu illnesses age logincome
+modeltab add
+
+  
+#Try a TSLS regression using the same variables as those used for the
+#OLS regression.  Save the output as Model2.  
+model2 <- tsls logmedexpense 0 healthinsu illnesses age logincome ; 0 illnesses age \
+  logincome ssiratio
+modeltab add
+
+#Now try conducting a TSLS regression step-by-step to illuminate the differences
+#between an OLS regression and the TSLS regression.  Save this including
+#model output from the first stage.  Save the first stage output as input for
+#the second stage.  Save the final output as Model3.  
+model3_first <- ols healthinsu 0 illnesses age logincome ssiratio --robust
+series y2hat=$yhat
+
+model3 <- ols logmedexpense 0 y2hat illnesses age logincome --robust
+modeltab add
+

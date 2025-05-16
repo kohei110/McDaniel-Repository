@@ -1,0 +1,51 @@
+#
+#
+
+open \
+  "I:\My Passport Documents\McDaniel\DataAnalytics\ANA510\Exams\MidtermExam\mlb1.gdt"
+
+logs Salary
+setinfo l_Salary --graph-name="Log(Salary)"
+
+#
+#Build the appropriate model using OLS with the --robust argument and save needed
+#values, e.g. sum of squares - error
+
+modelUR <- ols l_Salary 0 Years GamesPerYear BattingAverage HomeRunsPerYr RBIsPerYear --robust
+
+matrix thetaUR = $coeff
+thetaUR
+scalar SSRUR = $ess
+
+#Compute the denominator degrees of freedom = dfUR = (n - k - 1) 
+dfUR = 353 - 5 - 1
+#Compute or enter the number of variables in the restricted model
+q = 3
+
+
+#
+#Recognize the distribution for this test statistic, i.e. the F distributed 
+#random variable is a ratio two, independent Chi-squared random variables
+#where q is the numerator df and (n-k-1) is the denominator df or written
+#in generic terms F = (X1/k1) / (X2/k2) has an F distribution with (k1, k2)
+#degrees of freedom.  Then, obtain the critical value from a table.  For a
+#significance level of 5% the critical value is 2.60.  
+
+
+modelR <- ols l_Salary 0 Years GamesPerYear --robust
+
+matrix thetaR = $coeff
+thetaR
+scalar SSRR = $ess
+
+#
+#Now compute the F-statistic using the formula given before.
+
+scalar Fnum = (SSRR - SSRUR)/ q
+scalar Fden = SSRUR/dfUR
+scalar F = Fnum / Fden
+
+printf "\nThe sum of squares error for the unrestricted model is %.2f.\n", SSRUR
+printf "\nThe sum of squares error for the restricted model is %.2f.\n", SSRR
+printf "\nThe computed F statistic for these models is %.2f.\n", F
+

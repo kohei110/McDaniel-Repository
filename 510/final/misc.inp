@@ -1,0 +1,41 @@
+# Open the dataset
+open "/Users/nkohei/Workspace/McDaniel-Repository/510/final/milner.csv"
+
+# Fit the unrestricted multivariable linear regression model
+ols Sales const Accounts AdvExp Poten Share
+
+# Store results for later use
+matrix b = $coeff  # Coefficients
+matrix V = $vcv   # Variance-Covariance matrix of the estimates
+
+# Manually calculate degrees of freedom
+scalar df_model = 4  # Number of predictors
+scalar df_resid = $nobs - df_model - 1  # Total observations minus the number of coefficients
+
+# Calculate additional statistics
+scalar SST = $yss  # Total Sum of Squares
+scalar SSE = $ess  # Sum of Squares due to Error
+scalar SSR = $ssr  # Sum of Squares due to Regression
+scalar MSE = $sigma^2  # Mean Squared Error
+scalar R2 = $rsq  # R-squared
+scalar adjR2 = $adjrsq  # Adjusted R-squared
+
+# Determine F-critical at alpha = 0.05
+scalar f_critical = qf(0.95, df_model, df_resid)
+
+# Output results
+printf "\nTotal Sum of Squares (SST): %g", SST
+printf "\nSum of Squares due to Error (SSE): %g", SSE
+printf "\nSum of Squares due to Regression (SSR): %g", SSR
+printf "\nR-squared (R2): %g", R2
+printf "\nAdjusted R-squared (adjR2): %g", adjR2
+printf "\nMean Squared Error (MSE): %g", MSE
+printf "\nDegrees of freedom for the model: %d", df_model
+printf "\nDegrees of freedom for residuals: %d", df_resid
+printf "\nF-statistic: %g", $F
+printf "\nF-critical at 0.05 significance level: %g\n", f_critical
+
+# Confidence interval for coefficients
+matrix conf_int = $coeff - critical(t, df_resid, 0.025) * sqrt(diagonal(V))
+conf_int ~+= critical(t, df_resid, 0.025) * sqrt(diagonal(V))
+print(conf_int)

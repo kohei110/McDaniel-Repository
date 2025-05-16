@@ -1,0 +1,104 @@
+#
+#Now let's work on a script to analyze dichotomous data using logistic regression
+#It can be used for the first part of PS #2
+#
+
+#
+#First open the dataset
+
+
+open \
+  "/Users/nkohei/Workspace/McDaniel-Repository/510/week3/ContractData.gdt"
+  
+
+#
+#First let's look at the data
+
+oobs = $nobs
+oobs
+
+labels
+info
+summary
+
+
+#Next build a first model, i.e. model1
+
+model1 <- logit BIDStatusy 0 NumberofBiddersx1 DifferenceBetweenWinningBidandE 
+
+
+#
+# Next build the model, i.e. model2, to output P-values
+
+model2 <- logit BIDStatusy 0 NumberofBiddersx1 DifferenceBetweenWinningBidandE --multinomial --p-values --vcv 
+
+#
+#Note that like the gretl output for our logistic model has the same issue as the log-linear 
+#or log-quadratic models before.  That is, gretl logit output must also be converted (take 
+#the exp or anti-log) to get a final result as a probability.  In this case the final result 
+#will be the probability between 0 and 1.
+
+#You should have noticed in the recommended online reading that "e" is the right-
+#hand side of the equation for "y" or beta-zero + beta-one*variable1 + beta-two*variable2
+# and so on (most textbooks start numbering the coefficients at one but I usually
+#start numbering with zero for the intercept so that the coefficient for the first
+#variable is beta-one, the second variable is beta-two and so on.  However,
+#there may still be some translation between my numbering and output in a table
+#of coefficients.  Just make sure that however you do this you keep track of 
+#which coefficient goes with which variable...
+
+#I'll go back to model1 and save the output as I have before.  That way we can 
+#easily see what the equation for "e" must be and then take the exp(e)
+
+#Note that this will be slightly different than our log-linear or log-quadratic model
+#where we took the anti-log of the dependent variable rather than the eqn for "e"
+
+
+model1 <- logit BIDStatusy 0 NumberofBiddersx1 DifferenceBetweenWinningBidandE --vcv
+
+#Save the results
+#
+#Save the residuals
+series uhat1 = $uhat
+#gnuplot uhat1 NumberofBiddersx1 --output=display
+#gnuplot uhat1 DifferenceBetweenWinningBidandE --output=display
+
+#Save the matrix of coefficients and se
+matrix b = $coeff
+b
+
+matrix cova = $vcv
+cova
+
+#Save the standard errors
+matrix serr = $stderr
+serr
+
+#Save the standard error of regression
+se_reg = $sigma
+
+#Save tge sum of squares error
+sse = $ess
+
+#
+#Check your model output against the output shown in the textbook for this example.
+#It should be exactly the same!  
+#
+#So "e' has to be:
+#eqn_e = $coeff(const) + $coeff(NumberofBiddersx1)*"Number of Bidders" + $coeff(DifferenceBetweenWinningBidandE) * "Difference Between" 
+#
+#Predict the BidStatusy for the 4th observation Number of Bidders = 3, Difference = 3.9
+#
+
+pred_n4 =  exp($coeff(const) + ($coeff(NumberofBiddersx1)*3) + ($coeff(DifferenceBetweenWinningBidandE)*3.9))
+pred_n4
+
+#pred_n4 = 0.665 > 0.5 so we round that up to BidStatusy = 1 which is consistent with the data
+#in the dataset.  
+#
+
+#
+#Plot the data
+gnuplot BIDStatusy NumberofBiddersx1 --output=display
+gnuplot BIDStatusy DifferenceBetweenWinningBidandE --output=display
+

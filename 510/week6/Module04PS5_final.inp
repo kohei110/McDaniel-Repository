@@ -1,0 +1,271 @@
+#
+#gretl script for PS#6 - although I think you could just as easily do this through gretl's menus
+
+# open "/Users/nkohei/Workspace/McDaniel-Repository/510/week6/layoffs.gdt"
+open "/Users/nkohei/Workspace/McDaniel-Repository/510/final/diabetes.gdt"
+
+#
+#Initialize as necessary and set seed
+set seed 12345
+
+#
+#Get some basic information about the dataset, setup the dataframes and counters
+
+scalar oobs = $nobs
+scalar nbvars = ($nvars - 2)
+printf "\nNumber of obs = %d and number of variables = %d\n",oobs,nbvars
+
+#Run OLS regression on each of the independent variables to determine which has the lowest P-value
+#Select that as the first variable in the forward-selection, add that to the "permanent" model
+#and proceed by selecting the independent variable with the next lowest P-value etc.
+
+Pregnancies_model <- ols Outcome 0 Pregnancies
+Glucose_model <- ols Outcome 0 Glucose
+BloodPressure_model <- ols Outcome 0 BloodPressure
+SkinThickness_model <- ols Outcome 0 SkinThickness
+Insulin_model <- ols Outcome 0 Insulin
+BMI_model <- ols Outcome 0 BMI
+DPF_model <- ols Outcome 0 DiabetesPedigreeFunction
+AGE_model <- ols Outcome 0 Age
+
+
+
+Glucose_Pregnancies_model <- ols Outcome 0 Glucose Pregnancies
+Glucose_BloodPressure_model <- ols Outcome 0 Glucose BloodPressure
+Glucose_SkinThickness_model <- ols Outcome 0 Glucose SkinThickness
+Glucose_Insulin_model <- ols Outcome 0 Glucose Insulin
+Glucose_BMI_model <- ols Outcome 0 Glucose BMI
+Glucose_DiabetesPedigreeFunction_model <- ols Outcome 0 Glucose DiabetesPedigreeFunction
+Glucose_Age_model <- ols Outcome 0 Glucose Age
+
+
+Glucose_BMI_Pregnancies_model <- ols Outcome 0 Glucose BMI Pregnancies
+Glucose_BMI_BloodPressure_model <- ols Outcome 0 Glucose BMI BloodPressure
+Glucose_BMI_SkinThickness_model <- ols Outcome 0 Glucose BMI SkinThickness
+Glucose_BMI_Insulin_model <- ols Outcome 0 Glucose BMI Insulin
+Glucose_BMI_DiabetesPedigreeFunction_model <- ols Outcome 0 Glucose BMI DiabetesPedigreeFunction
+Glucose_BMI_Age_model <- ols Outcome 0 Glucose BMI Age
+
+Glucose_BMI_Pregnancies_BloodPressure_model <- ols Outcome 0 Glucose BMI Pregnancies BloodPressure
+Glucose_BMI_Pregnancies_SkinThickness_model <- ols Outcome 0 Glucose BMI Pregnancies SkinThickness
+Glucose_BMI_Pregnancies_Insulin_model <- ols Outcome 0 Glucose BMI Pregnancies Insulin
+Glucose_BMI_Pregnancies_DiabetesPedigreeFunction_model <- ols Outcome 0 Glucose BMI Pregnancies DiabetesPedigreeFunction
+Glucose_BMI_Pregnancies_Age_model <- ols Outcome 0 Glucose BMI Pregnancies Age
+
+Glucose_BMI_Pregnancies_BloodPressure_SkinThickness_model <- ols Outcome 0 Glucose BMI Pregnancies BloodPressure SkinThickness
+Glucose_BMI_Pregnancies_BloodPressure_Insulin_model <- ols Outcome 0 Glucose BMI Pregnancies BloodPressure Insulin
+Glucose_BMI_Pregnancies_BloodPressure_DiabetesPedigreeFunction_model <- ols Outcome 0 Glucose BMI Pregnancies BloodPressure DiabetesPedigreeFunction
+Glucose_BMI_Pregnancies_BloodPressure_Age_model <- ols Outcome 0 Glucose BMI Pregnancies BloodPressure Age
+
+Glucose_BMI_Pregnancies_BloodPressure_DiabetesPedigreeFunction_model <- ols Outcome 0 Glucose BMI Pregnancies BloodPressure DiabetesPedigreeFunction
+
+
+
+
+be_model <- ols Outcome 0 Pregnancies Glucose BloodPressure SkinThickness Insulin BMI DiabetesPedigreeFunction Age
+be_SkinThickness_model <- ols Outcome 0 Pregnancies Glucose BloodPressure Insulin BMI DiabetesPedigreeFunction Age
+be_SkinThickness_Insulin_model <- ols Outcome 0 Pregnancies Glucose BloodPressure BMI DiabetesPedigreeFunction Age
+be_SkinThickness_Insulin_Age_model <- ols Outcome 0 Pregnancies Glucose BloodPressure BMI DiabetesPedigreeFunction
+
+
+  Pregnancies          0.0209264   0.00512176    4.086   4.86e-05 ***
+  Glucose              0.00570911  0.000483200  11.82    1.07e-29 ***
+  BloodPressure       −0.00235721  0.000801807  −2.940   0.0034   ***
+  BMI                  0.0130807   0.00196338    6.662   5.17e-11 ***
+  DiabetesPedigree~    0.140302    0.0443929     3.160   0.0016   ***
+
+#
+#gretl script for PS#6 - although I think you could just as easily do this through gretl's menus
+
+# open "/Users/nkohei/Workspace/McDaniel-Repository/510/week6/layoffs.gdt"
+open "/Users/nkohei/Workspace/McDaniel-Repository/510/final/diabetes.gdt"
+
+#
+#Initialize as necessary and set seed
+set seed 12345
+
+#
+#Get some basic information about the dataset, setup the dataframes and counters
+
+scalar oobs = $nobs
+scalar nbvars = ($nvars - 2)
+printf "\nNumber of obs = %d and number of variables = %d\n",oobs,nbvars
+
+#Run OLS regression on each of the independent variables to determine which has the lowest P-value
+#Select that as the first variable in the forward-selection, add that to the "permanent" model
+#and proceed by selecting the independent variable with the next lowest P-value etc.
+
+Pregnancies_model <- ols Outcome 0 Pregnancies
+Glucose_model <- ols Outcome 0 Glucose
+BloodPressure_model <- ols Outcome 0 BloodPressure
+SkinThickness_model <- ols Outcome 0 SkinThickness
+Insulin_model <- ols Outcome 0 Insulin
+BMI_model <- ols Outcome 0 BMI
+DPF_model <- ols Outcome 0 DiabetesPedigreeFunction
+AGE_model <- ols Outcome 0 Age
+
+
+
+Glucose_Pregnancies_model <- ols Outcome 0 Glucose Pregnancies
+Glucose_BloodPressure_model <- ols Outcome 0 Glucose BloodPressure
+Glucose_SkinThickness_model <- ols Outcome 0 Glucose SkinThickness
+Glucose_Insulin_model <- ols Outcome 0 Glucose Insulin
+Glucose_BMI_model <- ols Outcome 0 Glucose BMI
+Glucose_DiabetesPedigreeFunction_model <- ols Outcome 0 Glucose DiabetesPedigreeFunction
+Glucose_Age_model <- ols Outcome 0 Glucose Age
+
+
+Glucose_BMI_Pregnancies_model <- ols Outcome 0 Glucose BMI Pregnancies
+Glucose_BMI_BloodPressure_model <- ols Outcome 0 Glucose BMI BloodPressure
+Glucose_BMI_SkinThickness_model <- ols Outcome 0 Glucose BMI SkinThickness
+Glucose_BMI_Insulin_model <- ols Outcome 0 Glucose BMI Insulin
+Glucose_BMI_DiabetesPedigreeFunction_model <- ols Outcome 0 Glucose BMI DiabetesPedigreeFunction
+Glucose_BMI_Age_model <- ols Outcome 0 Glucose BMI Age
+
+Glucose_BMI_Pregnancies_BloodPressure_model <- ols Outcome 0 Glucose BMI Pregnancies BloodPressure
+Glucose_BMI_Pregnancies_SkinThickness_model <- ols Outcome 0 Glucose BMI Pregnancies SkinThickness
+Glucose_BMI_Pregnancies_Insulin_model <- ols Outcome 0 Glucose BMI Pregnancies Insulin
+Glucose_BMI_Pregnancies_DiabetesPedigreeFunction_model <- ols Outcome 0 Glucose BMI Pregnancies DiabetesPedigreeFunction
+Glucose_BMI_Pregnancies_Age_model <- ols Outcome 0 Glucose BMI Pregnancies Age
+
+Glucose_BMI_Pregnancies_DiabetesPedigreeFunction_BloodPressure_model <- ols Outcome 0 Glucose BMI Pregnancies DiabetesPedigreeFunction BloodPressure
+Glucose_BMI_Pregnancies_DiabetesPedigreeFunction_SkinThickness_model <- ols Outcome 0 Glucose BMI Pregnancies DiabetesPedigreeFunction SkinThickness
+Glucose_BMI_Pregnancies_DiabetesPedigreeFunction_Insulin_model <- ols Outcome 0 Glucose BMI Pregnancies DiabetesPedigreeFunction Insulin
+Glucose_BMI_Pregnancies_DiabetesPedigreeFunction_Age_model <- ols Outcome 0 Glucose BMI Pregnancies DiabetesPedigreeFunction Age
+
+
+
+fs_final_model <- ols Outcome 0 Glucose BMI Pregnancies DiabetesPedigreeFunction
+
+#Rating_model <- ols Sales 0 Rating
+
+#Since (as before) age is has the lowest P-value select it to include in the permanent model.  Then
+#start over with the remaining independent variables.
+
+ols Weeks 0 Age Educ
+ols Weeks 0 Age Married
+ols Weeks 0 Age Head
+ols Weeks 0 Age Tenure
+ols Weeks 0 Age Manager
+ols Weeks 0 Age Sales
+
+#Manager is the variable that has the lowest P-Value in this round.  Add Manager to the permanent
+#forward-selection model and repeat with the remaining independent variables.
+
+ols Weeks 0 Age Manager Educ
+ols Weeks 0 Age Manager Married
+ols Weeks 0 Age Manager Head
+ols Weeks 0 Age Manager Tenure
+ols Weeks 0 Age Manager Sales
+
+#Head is the variable that has the lowest P-value now.  Add Head to the permanent forward-selection
+#model and repeat.
+
+ols Weeks 0 Age Manager Head Educ
+ols Weeks 0 Age Manager Head Married
+ols Weeks 0 Age Manager Head Tenure
+ols Weeks 0 Age Manager Head Sales
+
+#Sales is the variable that is still statistically significant.  Pick Sales to add to the forward-
+#selection model and repeat.
+
+ols Weeks 0 Age Manager Head Sales Educ
+ols Weeks 0 Age Manager Head Sales Married
+ols Weeks 0 Age Manager Head Sales Tenure
+
+#None of these variables is statistically significant at the 0.05 level.  So we stop the forward-
+#selection process with our model including the independent variables Age, Manager, Head, and Sales.
+
+ols Weeks 0 Age Manager Head Sales
+
+
+#Part 2 backward elimination ***********************************************************************
+#Backward-elimination is really just the reverse of forward-selection.  Start with all the independent
+#variables included and conduct an OLS regression.
+
+ols Weeks 0 Age Educ Married Head Tenure Manager Sales
+
+#Here Educ has the highest P-value so is dropped.  Continue with the remaining independent variables.
+
+ols Weeks 0 Age Married Head Tenure Manager Sales
+
+#Next, Tenure is dropped, then continue.
+
+ols Weeks 0 Age Married Head Manager Sales
+
+#Now, Married is dropped, then continue.
+
+ols Weeks 0 Age Head Manager Sales
+
+#In the end, we are left with the same set of independent variables as we had from forward-selection.  In
+#fact, because it is the same set of variables, they all have the same values of coefficients, etc.
+#Have we accomplished anything???  
+
+
+
+fs_final_model <- ols Outcome 0 Glucose BMI Pregnancies DiabetesPedigreeFunction
+
+#Rating_model <- ols Sales 0 Rating
+
+#Since (as before) age is has the lowest P-value select it to include in the permanent model.  Then
+#start over with the remaining independent variables.
+
+ols Weeks 0 Age Educ
+ols Weeks 0 Age Married
+ols Weeks 0 Age Head
+ols Weeks 0 Age Tenure
+ols Weeks 0 Age Manager
+ols Weeks 0 Age Sales
+
+#Manager is the variable that has the lowest P-Value in this round.  Add Manager to the permanent
+#forward-selection model and repeat with the remaining independent variables.
+
+ols Weeks 0 Age Manager Educ
+ols Weeks 0 Age Manager Married
+ols Weeks 0 Age Manager Head
+ols Weeks 0 Age Manager Tenure
+ols Weeks 0 Age Manager Sales
+
+#Head is the variable that has the lowest P-value now.  Add Head to the permanent forward-selection
+#model and repeat.
+
+ols Weeks 0 Age Manager Head Educ
+ols Weeks 0 Age Manager Head Married
+ols Weeks 0 Age Manager Head Tenure
+ols Weeks 0 Age Manager Head Sales
+
+#Sales is the variable that is still statistically significant.  Pick Sales to add to the forward-
+#selection model and repeat.
+
+ols Weeks 0 Age Manager Head Sales Educ
+ols Weeks 0 Age Manager Head Sales Married
+ols Weeks 0 Age Manager Head Sales Tenure
+
+#None of these variables is statistically significant at the 0.05 level.  So we stop the forward-
+#selection process with our model including the independent variables Age, Manager, Head, and Sales.
+
+ols Weeks 0 Age Manager Head Sales
+
+
+#Part 2 backward elimination ***********************************************************************
+#Backward-elimination is really just the reverse of forward-selection.  Start with all the independent
+#variables included and conduct an OLS regression.
+
+ols Weeks 0 Age Educ Married Head Tenure Manager Sales
+
+#Here Educ has the highest P-value so is dropped.  Continue with the remaining independent variables.
+
+ols Weeks 0 Age Married Head Tenure Manager Sales
+
+#Next, Tenure is dropped, then continue.
+
+ols Weeks 0 Age Married Head Manager Sales
+
+#Now, Married is dropped, then continue.
+
+ols Weeks 0 Age Head Manager Sales
+
+#In the end, we are left with the same set of independent variables as we had from forward-selection.  In
+#fact, because it is the same set of variables, they all have the same values of coefficients, etc.
+#Have we accomplished anything???  
+

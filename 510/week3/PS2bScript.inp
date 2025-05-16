@@ -1,0 +1,34 @@
+#
+#Part 2 of Problem Set #2 requires the use of a different dataset.  These data are in the 
+#data file cokeVsPepsi.gdt.  
+#
+
+open "I:\My Passport Documents\McDaniel\DataAnalytics\ANA510\Assignments\PS2\cokeVsPepsi.gdt"
+
+#
+#Begin as usual by considering the data, i.e. how many observations, what variables, etc.
+
+oobs = $nobs
+oobs
+
+labels
+info
+summary
+
+#
+#Make a personal note of anything that seems odd...
+#Build a linear model from the data using the price ratio, pratio rather than the individual
+#variables for the price of coke and the price of pepsi
+
+cokeLinear <- ols coke const pratio disp_coke disp_pepsi 
+
+cokeProbit <- probit coke const pratio disp_coke disp_pepsi
+
+cokeLogit <- logit coke const pratio disp_coke disp_pepsi
+
+#
+#Now, let's make some predictions using the logit model.
+#
+
+
+

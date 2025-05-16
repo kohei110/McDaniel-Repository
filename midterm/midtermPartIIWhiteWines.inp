@@ -1,0 +1,62 @@
+#
+#Script for Part II of the Midterm Exam using the White Wines dataset
+
+open "I:\My Passport Documents\McDaniel\DataAnalytics\ANA510\Exams\MidtermExam\whiteWines.gdt"
+
+info
+labels
+summary --simple
+
+setinfo Quality --discrete
+setinfo Quality --coded
+
+corr
+freq Quality --plot=display
+
+ols Quality 0 FixedAcidity VolatileAcidity CitricAcid ResidualSugar \
+  Chlorides FreeSulfurDioxide TotalSulfurDioxide Density pH Sulphates \
+  Alcohol --robust
+  
+matrix thetaUR = $coeff
+thetaUR
+scalar SSRUR = $ess
+scalar dfUR = $df
+
+summary --simple
+
+smpl Quality <5 --restrict
+summary --simple
+smpl full 
+
+smpl Quality >7 --restrict
+summary --simple
+smpl full
+
+
+ols Quality 0 ResidualSugar Chlorides TotalSulfurDioxide pH Alcohol --robust
+  
+#ols Quality 0 FixedAcidity VolatileAcidity CitricAcid FreeSulfurDioxide \
+#  Sulphates --robust
+  
+ols Quality 0 VolatileAcidity CitricAcid ResidualSugar FreeSulfurDioxide --robust
+
+matrix thetaR = $coeff
+thetaR
+scalar SSRR = $ess
+
+#
+#From the statistical table F critical is 2.10   
+#Now compute the F-statistic using the formula given before.
+
+scalar q=6
+scalar Fnum = (SSRR - SSRUR)/ q
+scalar Fden = SSRUR/dfUR
+scalar F = Fnum / Fden
+
+printf "\nThe sum of squares error for the unrestricted model is %.2f.\n", SSRUR
+printf "\nThe sum of squares error for the restricted model is %.2f.\n", SSRR
+printf "\nThe computed F statistic for these models is %.2f.\n", F
+
+#
+#It looks like all the variables in the original, unrestricted model
+#are needed in the model for this dataset.  

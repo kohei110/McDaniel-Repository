@@ -1,0 +1,96 @@
+#
+#ANA 510 Final Exam Part V
+#  
+
+open \
+  "/Users/nkohei/Workspace/McDaniel-Repository/510/final/EmployeesSalary.csv"
+  
+set seed 3213789
+
+scalar oobs = $nobs
+oobs
+# 
+labels
+info
+summary
+
+freq Salary --nbins=11 --plot=display
+freq Age --nbins=15 --plot=display
+freq Experience_Years --nbins=15 --plot=display
+
+#
+#Both Salary and Experience_Years appear to be right skewed.
+
+logs Salary
+m_ols <- ols Salary 0 Experience_Years Age
+modeltab add
+series uhat2_lin = $uhat
+qqplot uhat2_lin --output=display
+
+
+genr log_Salary = log(Salary)
+m_ols <- ols log_Salary 0 Experience_Years Age
+summary m_ols
+modeltab add
+# 0.686220 - 0.470062
+
+#Save the sum of squares error
+sse_lin = $ess
+#
+
+
+
+be1_model <- ols l_Salary 0 ID Experience_Years Age Gender
+be2_model <- ols l_Salary 0 ID Experience_Years Gender
+be3_model <- ols l_Salary 0 Experience_Years Gender
+be4_model <- ols l_Salary 0 Experience_Years
+
+fs1_model <- ols Salary 0 Experience_Years
+fs2_model <- ols Salary 0 Age
+fs3_model <- ols Salary 0 Gender
+
+
+be_SkinThickness_model <- ols Outcome 0 Pregnancies Glucose BloodPressure Insulin BMI DiabetesPedigreeFunction Age
+be_SkinThickness_Insulin_model <- ols Outcome 0 Pregnancies Glucose BloodPressure BMI DiabetesPedigreeFunction Age
+be_SkinThickness_Insulin_Age_model <- ols Outcome 0 Pregnancies Glucose BloodPressure BMI DiabetesPedigreeFunction
+
+
+
+#Save the residuals to plot to verify assumptions
+#
+series uhat1_lin = $uhat
+gnuplot uhat1_lin Age --output=display
+qqplot uhat1_lin --output=display
+
+m_ln_lin <- ols l_Salary 0 Experience_Years Age
+#modeltab add
+
+#Save the sum of squares error
+sse_ln_lin = $ess
+#
+#Save the residuals to plot to verify assumptions
+#
+series uhat1_ln_lin = $uhat
+gnuplot uhat1_ln_lin Age --output=display
+qqplot uhat1_ln_lin --output=display
+
+#
+#Use the forward-selection process to determine what independent variables should 
+#be in the final model
+
+ols l_Salary 0 Age
+ols l_Salary 0 Experience_Years
+
+#
+#generate TSLS Regression model using the log(Salary) and the log(Experience_Years) 
+#and using Age as an instrument.  
+logs Experience_Years
+m_tsls <- tsls l_Salary 0 l_Experience_Years ; Age
+
+#Save the sum of squares error
+sse_tsls = $ess
+#
+#Save the residuals to plot to verify assumptions
+#
+series uhat1_tsls = $uhat
+qqplot uhat1_tsls --output=display

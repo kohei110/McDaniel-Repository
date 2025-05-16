@@ -1,0 +1,437 @@
+#
+#Script for Fall I ANA 500 Final Examination
+#
+
+#
+#Part I Descriptive and Summary Statistics
+#
+
+
+#Don't forget to change the path to wherever you have stored the data file!!!!!
+open \
+  "I:\My Passport Documents\McDaniel\DataAnalytics\ANA500\Exams\FinalFallI-2022\ultimateHousing.csv"
+#
+#Generate information about the data set as well as descriptive and summary statistics
+#
+
+#
+#Question #1
+#
+scalar obsTotal = $nobs
+printf "\n The number of observations is %d.\n",obsTotal
+
+
+#
+#Question #2
+#
+labels
+#
+info
+
+#
+#Question #4
+#
+summary 
+
+#
+#Is there multicollinearity in the data?
+#
+#Questions #5 and #6
+#
+corr price sqft bedrooms baths lgelot age pool
+
+#
+#Question #7
+#
+#Next consider how many houses have pools or large lots.  Use restricted sampling to
+#get the number of observations for each of these.  What is the respective proportion
+#of the total sample are each of these variables?  
+smpl pool==1 --restrict
+scalar oobs = $nobs
+printf "\n The number of observations of houses with pools is %d.\n",oobs
+printf "\n The proportion of pools is %.2f. \n", (oobs/obsTotal)
+smpl full
+smpl lgelot==1 --restrict
+scalar noobs = $nobs
+printf "\n The number of observations of houses with large lots is %d.\n",noobs
+printf "\n The proportion of houses with large lots is %.2f. \n", (noobs/obsTotal)
+smpl full
+#
+#There are only 130 and 134 observations positive for these variables so they are also
+#only a very small proportion of the 2,610 observations.  
+#
+#Let's look at price and see if it's distribution is normal
+#
+#Question #8
+#
+freq price --plot=display
+
+#No, as we have seen before it is very right skewed.  So, plan on doing a natural log 
+#transformation on the price data.
+
+#Let's check out how the data looks with a natural log transformation applied.
+#
+#Question #9
+#
+series price_l = ln(price)
+freq price_l --plot=display
+#That certainly looks better!
+
+#
+#How about linearity?  Try looking at plots with a variety of fits for a trend line.
+#Do any fits look better than others?  Is the assumption of linearity ok?
+
+#gnuplot price sqft --fit=quadratic --output=display
+
+#
+#Actually a quadratic fit looks best.  Let's quantify that to verify. To do this we'll
+#need to generate three models; linear, quadratic and log-linear then compare SSE's
+
+#
+#Question #11 includes the following 4 models
+#
+
+#
+#*********
+#Build a simple linear model
+#*********
+#
+
+ols price const sqft --vcv
+#Save the sum of squares error
+sse_l = $ess
+#
+#Save the residuals to plot to verify assumptions
+#
+series uhat1_l = $uhat
+#gnuplot uhat1_l sqft --output=display
+#qqplot uhat1_l --output=display
+
+
+#
+#*******
+#Build a quadratic model
+#*******
+#
+
+series sqft_sq = sqft^2
+ols price const sqft_sq --vcv
+#Save the sum of squares error
+sse_q = $ess
+#Save the residuals and plot
+series uhat1_q = $uhat
+#gnuplot uhat1_q sqft --output=display
+#qqplot uhat1_q --output=display
+#generate a scatter plot to compare the linear and quadratic models
+#gnuplot price sqft_sq sqft --output=display 
+
+
+#
+#********
+#Build a log-linear model
+#********
+
+l_price = ln(price)
+ols l_price const sqft
+series l_yhat = $yhat
+series ln_pri = exp(l_yhat)
+#Compute the sum of squares error for the log-linear model
+#Note that the output for sse in the log-linear case is NOT accurate
+series y_diff = (price-ln_pri)^2
+scalar sse_ln = sum(y_diff)
+#Save the residuals
+series uhat1_ln = $uhat
+#gnuplot uhat1_ln sqft --output=display
+#qqplot uhat1_ln --output=display
+#Create the corresponding plot
+#gnuplot price ln_pri sqft --output=display
+
+
+#
+#Even though the log-linear appears visually to be the best fit and SSE for 
+#the quadratic model is the least.  Let' try one more, let's combine the
+#models by adding a higher order term for size to the log-linear model
+
+#
+#********
+#Build a log-quadratic model
+#********
+#
+
+
+l_price = ln(price)
+sqft_sq = sqft^2
+ols l_price const sqft sqft_sq
+series l_yhat = $yhat
+series ln2_pri = exp(l_yhat)
+#Compute the sum of squares error for the log-linear model
+#Note that the output for sse in the log-linear case is NOT accurate
+series y_diff = (price-ln2_pri)^2
+scalar sse_ln2 = sum(y_diff)
+#Save the residuals
+series uhat1_ln2 = $uhat
+#gnuplot uhat1_ln2 sqft --output=display
+#qqplot uhat1_ln2 --output=display
+#Create the corresponding plot
+#gnuplot price ln2_pri sqft --output=display
+
+
+
+
+#*********
+#Part II Regression
+#*********
+
+
+
+#
+#Compare the SSE's from the models to see which minimizes the error
+printf "\nSSE for the linear model is %.2f.\n",sse_l
+printf "\nSSE for the quadratic model is %.2f.\n",sse_q
+printf "\nSSE for the log-linear model is %.2f.\n",sse_ln
+printf "\nSSE for the combined model is %.2f. \n",sse_ln2
+
+#
+#This model, taking the natural log of the price and adding a second-order term
+#for size-squared does minimize SSE.  The plot of the residuals looks good,
+#better than the others. And similarly, the Q-Q Plot is better than the others.
+#
+
+#*********************************************
+#*********************************************
+#*********************************************
+
+
+#
+#Questions #12, #13 and #14
+#
+#
+#********
+#Final, multivariable log-quadratic model per the "boss" 
+#********
+#
+
+smpl full
+
+l_price = ln(price)
+sqft_sq = sqft^2
+age_sq = age^2
+finModel_unres <- ols l_price const sqft sqft_sq age age_sq bedrooms --vcv
+
+#Save the results
+#
+#Save the residuals
+series uhat1 = $uhat
+gnuplot uhat1 sqft --output=display
+gnuplot uhat1 age --output=display
+
+#Save the matrix of coefficients and se
+matrix b_unres = $coeff
+b_unres
+
+matrix cova_unres = $vcv
+cova_unres
+
+#Save the standard errors
+matrix serr_unres = $stderr
+serr_unres
+
+#Save the standard error of regression
+se_reg_unres = $sigma
+
+#Save tge sum of squares error
+sse_unres = $ess
+
+#Take the anti-log of the fitted values
+series l_yhat = $yhat
+series ln_pri = exp(l_yhat)
+
+#Compute the sum of squares error for the log-quadratic model
+series y_diff = (price-ln_pri)^2
+scalar sse_ln_unres = sum(y_diff)
+
+
+#
+#
+#*********
+#Part III
+#*********
+#
+#
+
+#
+#Question #15b
+#Use a hypothesis test to determine if size is related to price and should 
+#remain in the model.  That is, test that the coefficients related to size 
+#equal 0.  Since there is sqft and sqft_sq, or two variables, we need to use
+#an F-test rather than a simpler t-test.  An unrestricted model was built before
+#so now build the restricted model to get the required SSE-R values, i.e. 
+#remove the terms for sqft and sqft_sq.
+#
+
+l_price = ln(price)
+sqft_sq = sqft^2
+age_sq = age^2
+finModel_res <- ols l_price const sqft sqft_sq age age_sq bedrooms --vcv
+restrict
+    b[2] = 0
+    b[3] = 0
+end restrict
+
+#
+#The P-value is very small so reject the null hypothesis that the coefficient
+#of size equals 0.
+#
+#Question #15c
+#Now conduct an F-test to determine whether or not age should remain in the model
+#
+
+
+l_price = ln(price)
+sqft_sq = sqft^2
+age_sq = age^2
+finModel_res <- ols l_price const sqft sqft_sq age age_sq bedrooms --vcv
+restrict
+    b[4] = 0
+    b[5] = 0
+end restrict
+
+
+#
+#The P-value is very small again so reject the null hypothesis.  Age stays
+#in the model.  
+
+#
+#Question #15d
+#
+#Predict the price for a 2000 square foot 3 bedr house that is 10 years old
+#
+
+l_price = ln(price)
+sqft_sq = sqft^2
+age_sq = age^2
+finModel <- ols l_price const sqft sqft_sq age age_sq bedrooms --vcv
+
+#Save the results
+#
+#Save the residuals
+series uhat1 = $uhat
+gnuplot uhat1 sqft --output=display
+gnuplot uhat1 age --output=display
+
+#Save the matrix of coefficients and se
+matrix b = $coeff
+b
+
+matrix cova = $vcv
+cova
+
+#Save the standard errors
+matrix serr = $stderr
+serr
+
+#Save the standard error of regression
+se_reg = $sigma
+
+#Save tge sum of squares error
+sse = $ess
+
+#Take the anti-log of the fitted values
+series l_yhat = $yhat
+series ln_pri = exp(l_yhat)
+
+#Compute the sum of squares error for the log-quadratic model
+series y_diff = (price-ln_pri)^2
+scalar sse_ln_unres = sum(y_diff)
+
+scalar pri_2000 = exp(b[1,] + b[2,]*20 + b[3,]*(20^2) + b[4,]*10 + b[5,]*(10^2) + b[6,]*3)
+pri_2000
+printf "\n"
+printf "\n"
+printf "\n"
+printf "\n ********************************************** \n"
+printf "\n The price for a 2000 sq foot home that is 10 years old and has 3 bedroons is %.2f.\n",pri_2000
+printf "\n ********************************************** \n"
+
+
+#
+#Compute the 95% confidence interval for the marginal effect around size
+#for a 2000 square foot house
+scalar siz = 2000
+scalar se_f = $sigma
+scalar tcrit = critical(t, $df, .025)
+printf "\nsize equals %d, se(f) equals %.4f, t-critical equals %.6f.\n",siz,se_f,tcrit
+printf "\nThe mean of price is %.2f.\n",mean(l_price)
+
+lb_multi2 = mean(l_price) - (tcrit*se_f)
+ub_multi2 = mean(l_price) + (tcrit*se_f)
+
+printf "\nThe 95%% Confidence Interval for the marginal effect of size on price \
+is from $%.2f to $%.2f.\n",lb_multi2,ub_multi2
+
+#
+#Convert to real dollars and cents
+rlb = exp(lb_multi2)
+rub = exp(ub_multi2)
+printf "\nThe 95%% confidence interval in dollars and cents is from %.2f to %.2f.\n",rlb,rub
+
+#
+#We report this by saying that with 95% confidence we predict that the selling price of
+#a house with the specified characteristics lies between $74,530 and $173,664.
+#
+#
+
+
+#
+#
+#*********
+#Part IV
+#*********
+#
+#
+
+#
+#Question #16
+
+smpl full
+smpl lgelot==1 --restrict
+
+l_price = ln(price)
+sqft_sq = sqft^2
+age_sq = age^2
+ols l_price const sqft sqft_sq age age_sq bedrooms --vcv
+matrix bl = $coeff
+
+scalar lpri_2000 = exp(bl[1,] + bl[2,]*20 + bl[3,]*(20^2) + bl[4,]*10 + bl[5,]*(10^2) + bl[6,]*3)
+lpri_2000
+printf "\n"
+printf "|n"
+printf "\n ********************************************** \n"
+printf "\n The price the house on a large lot is %.2f.\n",lpri_2000
+printf "\n ********************************************** \n"
+
+
+smpl full
+smpl lgelot==0 --restrict
+
+l_price = ln(price)
+sqft_sq = sqft^2
+age_sq = age^2
+ols l_price const sqft sqft_sq age age_sq bedrooms --vcv
+matrix bs = $coeff
+
+scalar spri_2000 = exp(bs[1,] + bs[2,]*20 + bs[3,]*(20^2) + bs[4,]*10 + bs[5,]*(10^2) + bs[6,]*3)
+spri_2000
+printf "\n"
+printf "|n"
+printf "\n ********************************************** \n"
+printf "\n The price the house on a small lot is %.2f.\n",spri_2000
+printf "\n ********************************************** \n"
+
+scalar perct = (lpri_2000-spri_2000)/lpri_2000
+printf "\n"
+printf "|n"
+printf "\n ********************************************** \n"
+printf "\n The increase in price based on lot size %.2f.\n",perct
+printf "\n ********************************************** \n"
+

@@ -1,0 +1,381 @@
+#
+#Script for Problem Set #3 using the nels_small.gdt dataset
+#
+
+#
+#
+#Open the data file and look at the data then compute soem descriptive statistics
+#
+#
+
+
+#
+#*********************************
+#Question 1
+#*********************************
+#
+#
+#Feel free to use code snippet or snippets from this section or use the code below as a 
+#guide for creating your own code snippets in gretl, or pursue however you want
+#to solve the related questions
+#
+#
+
+
+open \
+  "I:\My Passport Documents\McDaniel\DataAnalytics\ANA510\Assignments\PS3\nels_small.gdt"
+
+scalar oobs = $nobs
+oobs
+
+labels
+info
+summary
+
+meanGr = mean(grades)
+
+#
+#Let's find out some more about the data and who or what groups are included
+#Let's also look at what the students are planning on doing; no college, 2-yr college,
+#or 4-yr college
+
+smpl psechoice==1 --restrict
+p1_obs = $nobs
+printf "\nThe number of students choosing not to go to college, i.e. psechoice 1 is %.2f.\n",p1_obs
+
+proportion_p1 = p1_obs/oobs
+p1_mean_grade = mean(grades)
+printf "\nThe proportion of students not going to college is %.2f.\n",proportion_p1 
+printf "\nThe average grade for students not going to college is %.2f.\n",p1_mean_grade
+
+smpl full
+
+smpl psechoice==2 --restrict
+p2_obs = $nobs
+printf "\nThe number of students choosing to go to 2-yr colleges, i.e. psechoice 2 is %.2f.\n",p2_obs
+
+proportion_p2 = p2_obs/oobs
+p2_mean_grade = mean(grades)
+printf "\nThe proportion of students going to 2-year colleges is %.2f.\n",proportion_p2
+printf "\nThe average grade for students going to 2-year colleges is %.2f.\n",p2_mean_grade
+p2_minGr = min(grades)
+p2_maxGr = max(grades)
+printf "\nThe minimum grade for students going to 2-year college is %.2f.\n",p2_minGr
+printf "\nThe maximum grade for students going to 2-year colleges is %.2f.\n",p2_maxGr
+
+smpl full
+
+smpl psechoice==3 --restrict
+p3_obs = $nobs
+printf "\nThe number of students choosing to go to 4-yr colleges, i.e. psechoice 2 is %.2f.\n",p3_obs
+
+proportion_p3 = p3_obs/oobs
+p3_mean_grade = mean(grades)
+printf "\nThe proportion of students going to 4-year colleges is %.2f.\n",proportion_p3
+printf "\nThe average grade for students going to 2-year colleges is %.2f.\n",p3_mean_grade
+p3_minGr = min(grades)
+p3_maxGr = max(grades)
+printf "\nThe minimum grade for students going to 4-year college is %.2f.\n",p3_minGr
+printf "\nThe maximum grade for students going to 4-year colleges is %.2f.\n",p3_maxGr
+
+smpl full
+
+
+#
+#
+#What about looking at who will go to college or not by demographics
+
+
+smpl female==1 --restrict
+fobs = $nobs
+perc_female = (fobs/oobs)*100
+printf "\nThe percentage of all students who are female is %.2f%%. \n",perc_female
+
+smpl full
+
+smpl black==1 --restrict
+bobs = $nobs
+perc_black = (bobs/oobs)*100
+printf "\nThe percentage of all students who are black is %.2f%%. \n",perc_black
+
+smpl female==1 --restrict
+bfobs = $nobs
+perc_bfemale = (bfobs/oobs)*100
+printf "\nThe percentage of all students who are black females is %.2f%%. \n",perc_bfemale
+
+meanFamInc = mean(faminc)
+meanBFGr = mean(grades)
+printf "\nThe mean grade for black female students is %.2f. \n",meanBFGr
+printf "\nThe mean grade for all students is %.2f. \n",meanGr
+
+smpl full
+
+
+#
+#******************************************
+#Question 2
+#******************************************
+#
+#
+#Do some work to set things up for a function to generate probabilities and marginal effects
+#and build a multinomial logit model for psechoice as a function of grades for this dataset
+
+function list mlogitprob(series y, list x, matrix theta)
+    list probs = null
+    matrix X = { x }
+    scalar j = max(y)
+    scalar k = cols(X)
+    matrix b = mshape(theta,k,j-1)
+    matrix tmp = X*b
+    series den = (1 + sumr(exp(tmp)))
+    
+    loop for i=1..j --quiet
+        if i == 1
+            series p$i = 1/den
+        else
+            scalar q = i-1
+            series num = exp(X[q,]*b[,q])
+            series p$i=num/den
+        endif
+        list probs += p$i
+    endloop
+    return probs
+end function
+
+
+list x = const grades
+
+modelM <- logit psechoice x --multinomial 
+
+matrix theta = $coeff
+list n = mlogitprob(psechoice, x, theta)
+smpl 1 12
+print n --byobs
+smpl full
+
+
+list x = const grades
+
+logit psechoice x --multinomial
+
+#
+#
+#Look at the predicted probabilities for psechoice 1, 2, or 3 for students in the 95th percentile
+#and students in the 50th percentile
+
+
+function matrix mlogitprob_at(series y, matrix X, matrix theta)
+    matrix probs = {}
+    scalar j = max(y)
+    scalar k = cols(X)
+    matrix b = mshape(theta,k,j-1)
+    matrix tmp = X*b
+    scalar den = (1 + sumr(exp(tmp)))
+
+    loop for i=1..j --quiet
+        if i == 1
+            scalar  p$i = 1/den
+        else
+            scalar q = i - 1
+            scalar num = exp(X*b[,q])
+            scalar p$i=num/den
+        endif
+        matrix probs = probs ~ p$i
+    endloop
+    return probs
+end function
+
+
+matrix theta = $coeff
+matrix Xm = {1 , quantile(grades,.50)}
+matrix p50 = mlogitprob_at(psechoice, Xm, theta)
+matrix Xm = {1 , quantile(grades,.05)}
+matrix p05 = mlogitprob_at(psechoice, Xm, theta)
+printf "\nThe predicted probabilities for student grades=%6.2f is %8.4f\n",quantile(grades,.05), p05
+printf "\nThe predicted probabilities for student grades=%6.2f is %8.4f\n",quantile(grades,.50), p50
+
+#Note that the first value is the probability of psechoice = 1, not going to college, 
+#the second value is the probability of psechoice = 2, going to a 2-year college,
+#and the third value is the probability of psechoice = 3, going to a 4-year college
+#
+#
+#Now consider the average marginal effects (AME) for psechoice 1, 2, and 3
+
+rename p1 p01
+rename p2 p02
+rename p3 p03
+
+series grade1 = grades + 1
+list x1 = const grade1
+list n1 = mlogitprob(psechoice, x1, theta)
+series d1 = p1-p01
+series d2 = p2-p02
+series d3 = p3-p03
+summary d* --simple
+
+#
+#Next, use this to consider median students and students in the 95th percentile.  That is,
+#consider how the probabilities change with a 1 unit change in grades.  Note that we will
+#build a more comprehensive model using all available variables in the last part of this 
+#assignment.
+#
+#To keep it easy to follow this script and to update any internal variables that may have
+#been written over before, the script will start over with opening the data file
+#and then continue with the computations for the probabilities.  The model will be 
+#saved to a new name modelM2
+#
+
+open \
+  "I:\My Passport Documents\McDaniel\DataAnalytics\ANA510\Assignments\PS3\nels_small.gdt"
+
+list x = const grades
+
+model2 <- logit psechoice x --multinomial
+
+matrix theta = $coeff
+matrix Xm = {1, quantile(grades,.50)}
+matrix p50 = mlogitprob_at(psechoice, Xm, theta)
+matrix Xm = {1, quantile(grades, .05)}
+matrix p05 = mlogitprob_at(psechoice, Xm, theta)
+
+#printf "\nThe predicted probabilities for student grades = %6.2f is %8.4f.\n",quantile(grades,.05), p05
+
+#printf "\nThe predicted probabilities for student grades = %6.2f is %8.4f.\n",quantile(grades,.50),p50
+  
+
+#
+#Now consider the marginal effects of 1 unit change in grades for median and 95th
+#percentile students.
+
+scalar q50 = quantile(grades,.50)
+matrix Xm = {1 , q50-0.5}
+matrix p0 = mlogitprob_at(psechoice, Xm, theta)
+matrix Xm = {1 , q50+0.5}
+matrix p1 = mlogitprob_at(psechoice, Xm, theta)
+matrix me = p1-p0
+printf "\nThe marginal effect of grades for student grades =%6.2f is %8.4f\n",median(grades), me
+
+scalar q05 = quantile(grades,.05)
+matrix Xm = {1 , q05-0.5}
+matrix p0 = mlogitprob_at(psechoice, Xm, theta)
+matrix Xm = {1 , q05+0.5}
+matrix p1 = mlogitprob_at(psechoice, Xm, theta)
+matrix me = p1-p0
+printf "\nThe marginal effect of grades for student grades=%6.2f is %8.4f\n", q05, me
+
+
+#
+#*********************************************
+#Question 3
+#*********************************************
+#
+#
+#Build a model with psechoise as the dependent variable and grades, faminc, female and
+#black as independent variables
+#
+#
+
+
+open \
+  "I:\My Passport Documents\McDaniel\DataAnalytics\ANA510\Assignments\PS3\nels_small.gdt"
+
+
+list x = const grades faminc female black
+
+model3 <- logit psechoice x --multinomial
+
+matrix theta = $coeff
+theta
+
+matrix Xm = {1, quantile(grades,.50)}
+matrix p50 = mlogitprob_at(psechoice, Xm, theta)
+matrix Xm = {1, quantile(grades, .05)}
+matrix p05 = mlogitprob_at(psechoice, Xm, theta)
+
+#
+#Use the formulae given in your instruction sheet to answer the parts of Question 3
+#
+#
+
+#1 is reserved for the intercept coefficient
+#X2 = median value of grades
+#X3 = median value of faminc
+#X4 = male
+#X5 = white
+
+#
+#To get these values for these variables you need to subset the whole dataset etc...
+#then compute the median values of grades and family income (faminc).  The values of
+#X4 (which is female == 1) and X5 (which is black == 1) are zero
+#
+#
+
+smpl female==0 --restrict 
+smpl black==0 --restrict
+wmobs = $nobs
+
+scalar medianX2 = median(grades)
+scalar medianX3 = median(faminc)
+
+printf "\nThe number of male, white students is %.2f.\n", wmobs
+printf "\nThe median value of grades for white male students is %.2f.\n",medianX2
+printf "\nThe median value of family income for white male students is %.2f. \n",medianX3
+
+smpl full
+
+medianFamInc = median(faminc)
+medianBFGr = median(grades)
+
+theta[1,]
+theta[2,]
+theta[3,]
+theta[4,]
+theta[5,]
+theta[6,]
+theta[7,]
+theta[8,]
+theta[9,]
+theta[10,]
+
+
+#
+#Using the formulae provided in the Word doc produces the following equation for zi2 and zi3
+
+scalar z_i2 = theta[1,] + (theta[2,]*medianX2) + (theta[3,]*medianX3) + (theta[4,]*0) + (theta[5,]*0)
+scalar z_i3 = theta[6,] + (theta[7,]*medianX2) + (theta[8,]*medianX3) + (theta[9,]*0) + (theta[10,]*0)
+
+#
+#This is an interesting point...  There is an inconsistency in the solutions from the author of
+#the original problem.  In his solutions he uses the overall median values rather than the median
+#values for white, male students.  It does make a difference.  It isn't often that I write to
+#internationally known authors to question their solutions but I did this time!  
+#
+#If you use the overall median values equations for this answer are:
+
+scalar z_i2_oall = theta[1,] + (theta[2,]*medianBFGr) + (theta[3,]*medianFamInc) + (theta[4,]*0) + (theta[5,]*0)
+scalar z_i3_oall = theta[6,] + (theta[7,]*medianBFGr) + (theta[8,]*medianFamInc) + (theta[9,]*0) + (theta[10,]*0)
+
+#
+#plugging these values back into the formula for the probability p_hati3 you get
+
+scalar p_hati3 = (exp(z_i3))/(1+exp(z_i2)+exp(z_i3))
+printf "\nThe probability that a white male student with median values of grades (%.2f) and family income (%.2f) \
+  will attend a 4-year college is %.4f\n",medianX2,medianX3,p_hati3
+  
+#
+#Last find the probability ratio that a white male student will attend a 4-year college
+#relative to not attending college at all, i.e. p(white, male student)/p(not go to college) so will need 
+#to solve for p_hati1 (where 1 is the psechoice to not go to college) and then
+#the ratio p_hati3/p_hati1
+#
+
+scalar p_hati1 = 1 / (1+exp(z_i2)+exp(z_i3))
+
+scalar p_ratio = p_hati3 / p_hati1
+
+printf "\nThe probability ratio of a white, male student going to a 4-year college relative to a \
+white, male student not going to college at all is %.4f.\n",p_ratio
+printf "\nThat is, the white, male student with median values of grades and family income is %.4f more \
+  likely to go to a 4-year college than to not go to college.\n",p_ratio
+  
+

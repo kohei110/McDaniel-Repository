@@ -1,0 +1,21 @@
+#gretl script for PS#4 using the Fertility.dgt data file
+
+open \
+  "/Users/nkohei/Workspace/McDaniel-Repository/510/week5/Fertility.csv"
+
+# model_ols an OLS model
+ols weeksm1 0 morekids
+modeltab add
+
+#model2_ols the second ols model
+ols morekids 0 samesex
+
+#model_iv an IV model (TSLS regression)
+tsls weeksm1 0 morekids ; 0 samesex
+modeltab add
+
+#model2_iv an IV model (TSLS regression
+tsls weeksm1 0 morekids agem1 black hispan othrace ; 0 samesex agem1 \
+  black hispan othrace
+modeltab add
+

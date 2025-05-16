@@ -1,0 +1,403 @@
+#
+#This script will help you answer the logistic regression part of the Midterm Exam
+
+open \
+  "I:\My Passport Documents\McDaniel\DataAnalytics\ANA510\Exams\MidtermExam\creditData.gdt"
+  
+info
+labels
+summary
+oobs = $nobs
+  
+list x = const AccountBalance DurationOfCredMonths PaymentPreCredit CreditAmount ValueSavingsStocks \
+  ConcurrentCredits NoOfDependents
+  
+Model1 <- logit Creditability x --p-values --robust
+modeltab add
+
+
+#
+#Now look at marginal effects using a few of the available variables 
+
+# This function computes a t-dist confidence interval based on a statistic
+function void t_interval (scalar b, scalar se, scalar df, scalar p)
+    scalar alpha = (1-p)
+    scalar lb = b - critical(t,df,alpha/2)*se
+    scalar ub = b + critical(t,df,alpha/2)*se
+    printf "\nThe %2g%% confidence interval centered at %.3f is\
+(%.4f, %.4f)\n", p*100, b, lb, ub
+end function
+
+# This function computes t-dist confidence intervals after a model
+function matrix t_interval_m (matrix b "Coefficients", 
+      matrix v "Variance-covariance matrix", 
+      int df "Degrees-of-freedom", 
+      scalar p "Coverage probability for CI")
+    
+    scalar alpha = (1-p)               # Convert p to alpha
+    matrix c = critical(t,df,alpha/2)  # alpha/2 critical value
+    matrix se = sqrt(diag(v))          # standard errors
+    matrix lb = b - c*se               # lower bound
+    matrix ub = b + c* se              # upper bound
+    matrix result = b ~ se ~ lb ~ ub   # put into matrix
+    
+    cnameset(result, "Estimate StdErr (Lower, Upper) ") 
+    rnameset(result, "b")
+    printf "\nThe %2g%% confidence intervals\
+(t-distribution)\n%10.4f\n", p*100, result
+    return result
+end function
+
+function matrix ame_binary(matrix *b "parameter estimates",
+      list x "Variables list",                          
+      int dist[1:2:2] "distribution" )
+# Computes average marginal effects for probit or logit      
+    matrix p = lincomb(x, b)       # The index function
+    matrix d = (dist==1) ? exp(-p)./(1.+exp(-p)).^2 : dnorm(p)
+    matrix ame_matrix = d*b'
+    cnameset(ame_matrix, x)            # add column names
+    matrix amfx = meanc(ame_matrix)    # find the means
+    cnameset(amfx, x)                  # add the column names to amfx
+    printf "\n Average Marginal Effects (AME):\
+      \n Variables: %s\n%12.4g \n", varname(x), amfx
+    return amfx
+end function
+
+function matrix ame_cov (matrix b "parameter estimates",
+      matrix covmat "Covariance",
+      list x "Variables list",
+      int dist[1:2:2] "distribution" )
+    # Computes std errs for AME probit/logit
+    # Requires ame_binary      
+    matrix amfx = ame_binary(&b, x, dist)
+    matrix jac = fdjac(b, ame_binary(&b, x , dist))
+    matrix variance = qform(jac,covmat)
+    matrix se = sqrt(diag(variance))
+    matrix results = amfx' ~ se
+    rnameset(results, "b")
+    cnameset(results, "AME StdErr")
+    if dist == 1
+        printf "Logit:\n"
+    else
+        printf "Probit:\n"
+    endif
+    printf "%10.4f\n", results   
+    return amfx|variance
+end function
+
+function scalar p_binary(matrix b "parameter estimates",
+      matrix x "Representative Point",               
+      int dist[1:2:2] "distribution" )
+    # Computes the probability of a binary choice: 1 = logit
+    scalar p = x*b                  # The index function
+    scalar d = (dist==1) ? 1./(1.+exp(-p)) : cnorm(p) 
+    return d
+end function
+
+function void Probs (matrix b "parameter estimates",
+      matrix covmat "Covariance",
+      matrix x "Representative Point",
+      scalar df "Degrees of Freedom", 
+      int dist[1:2:2] "distribution")
+    # Function computes std errors of binary predictions
+    # Requires p_binary
+    scalar p = p_binary(b, x, dist)
+    matrix jac = fdjac(b, p_binary(b, x , dist))
+    matrix variance = qform(jac,covmat)
+    matrix se = sqrt(diag(variance))
+    scalar crit = critical(t,df,0.025)
+    matrix results = (p-crit*se) ~ p ~ (p+crit*se) ~ se
+
+    if dist == 1
+        printf "Logit:\n"
+    else
+        printf "Probit:\n"
+    endif
+
+    printf "95%% t(%.2g) confidence interval for probability at\n\
+    x = %8.4f\n", df, x
+    cnameset(results, " Lower ME Upper StdError" ) 
+    printf "%10.4f\n", results
+end function
+
+function scalar me_at(matrix *param "parameter estimates", 
+      matrix xx "Representative Point",         
+      scalar q "Parameter of interest",          
+      int modl[1:2:2] "distribution" )
+    # Marginal effects at a point -- continuous variables only
+    scalar idx = xx*param
+    scalar d = (modl==1)? (exp(-idx)./(1.+exp(-idx)).^2)*param[q] :\
+      dnorm(idx)*param[q]
+    return d
+end function
+
+function void MER (matrix *b "parameter estimates", 
+      matrix covmat "Covariance",  
+      matrix x "Representative Point",       
+      int q "Parameter of interest",         
+      int df "Degrees of Freedom",         
+      int modl[1:2:2] "distribution")
+    # Std errors for Marginal effects at a point -- continuous vars only  
+    scalar p = me_at(&b, x, q, modl)
+    matrix jac = fdjac(b, me_at(&b, x , q, modl))
+    matrix variance = qform(jac,covmat)
+    matrix se = sqrt(diag(variance))
+    scalar crit = critical(t,df,0.025)
+    matrix results = (p-crit*se) ~ p ~ (p+crit*se) ~ se
+    if modl == 1
+        printf "Logit:\n"
+    else
+        printf "Probit:\n"
+    endif
+    printf "95%% t(%.2g) confidence interval for b%.g at\n x =\
+    %9.2g \n", df, q, x
+    cnameset(results, " Lower ME Upper StdError" ) 
+    printf "%10.4f\n", results
+end function
+
+function void MER_lpmfx (matrix b "parameter estimates", 
+      list  XL "list of regressors",         
+      matrix covmat "Covariance matrix",     
+      matrix x_at "Representative point",    
+      int dist[1:2:1] "distribution",    
+      int df "degrees-of-freedom")
+    # The MER function to be used with lp-mfx.gfn 
+    # available from gretl's database server 
+    matrix me = binary_dp_dx(b, XL, x_at, dist)
+    matrix jac = fdjac(b, binary_dp_dx(b, XL, x_at, dist))
+    matrix variance = qform(jac,covmat)
+    matrix se = sqrt(diag(variance))
+    matrix results = me' ~ se
+    if dist == 1
+        printf "Logit:\n"
+    else
+        printf "Probit:\n"
+    endif
+    scalar crit = critical(t,df,0.025)
+    matrix results = (me'-crit*se) ~ me' ~ (me'+crit*se) ~ se
+    cnameset(results, "Lower ME Upper StdErr")
+    rnameset(results, XL[2:nelem(XL)])
+    cnameset(x_at, XL )
+    printf "Representative Point\n%11.2g\n95%% CI for MER\n%10.4g\n",x_at, results
+end function
+
+
+# Poisson ME at point -- continuous variable
+function scalar p_me_at(matrix b, matrix xx, scalar q)
+    scalar me = exp(xx*b)*b[q]
+    return me
+end function
+
+# Poisson ME at point -- indicator variable
+function scalar p_me_at_d(matrix b, matrix x1, matrix x2)
+    scalar me = exp(x1*b)-exp(x2*b)
+    return me
+end function
+
+function list mlogitprob(series y "Dependent variable",
+      list x "List of regressors",
+      matrix theta "Coefficient vector")
+    # computes probabilities of each choice for all data  
+    list probs = null
+    matrix X = { x }
+    scalar j = max(y)
+    scalar k = cols(X)
+    matrix b = mshape(theta,k,j-1)
+    matrix tmp = X*b
+    series den = (1 + sumr(exp(tmp)))
+
+    loop i=1..j --quiet
+        if i == 1
+            series p$i = 1/den
+        else
+            scalar q = i - 1
+            series num = exp(X[q,]*b[,q])
+            series p$i=num/den
+        endif
+        list probs += p$i
+    endloop
+    return probs
+end function
+
+function matrix mlogitprob_at(series y "Dependent variable",
+      matrix x "Representative point 1xk",
+      matrix theta "Coefficient vector")
+    # computes probabilities of each choice at a representative point  
+    matrix probs = {}
+    scalar j = max(y)
+    scalar k = cols(x)
+    matrix b = mshape(theta,k,j-1)
+    matrix tmp = x*b
+    scalar den = (1 + sumr(exp(tmp)))
+
+    loop i=1..j --quiet
+        if i == 1
+            scalar  p$i = 1/den
+        else
+            scalar q = i - 1
+            scalar num = exp(x*b[,q])
+            scalar p$i=num/den
+        endif
+        matrix probs = probs ~ p$i
+    endloop
+    return probs
+end function
+
+function series mlogitlogprobs(series y "Dependent Variable",
+      matrix X "Independent variables",
+      matrix theta "Parameters")
+    # This function computes the log probabilities for MLE
+    # estimation of MNL
+    scalar n = max(y)
+    scalar k = cols(X)
+    matrix b = mshape(theta,k,n)
+    matrix tmp = X*b
+    series ret = -ln(1 + sumr(exp(tmp)))
+    loop i=1..n --quiet
+        series x = tmp[,i]
+        ret += (y==$i) ? x : 0
+    endloop
+    return ret
+end function
+
+function matrix mnl_se_lpfmx (matrix b "parameter estimates",
+      matrix covmat "Covariance of MNL",
+      list XL "list of regressors",
+      matrix x "vector of x-values",
+      int j "1-based index of outcome",
+      int m "number of possible outcomes",
+      int df "degrees of freedom for CI" )
+# Computes MER and std errors for MNL
+# must install and use lp-mfx.gfn
+    matrix p = mlogit_dpj_dx(b, XL, x, j, m)
+    matrix jac = fdjac(b, mlogit_dpj_dx(b, XL, x, j, m))
+    matrix variance = qform(jac,covmat)
+    matrix se = sqrt(diag(variance))
+    scalar crit = critical(t,df,0.025)
+    matrix results = (p-crit*se) ~ p ~ (p+crit*se) ~ se
+
+    cnameset(results, "Lower ME Upper StdErr")
+    printf "95%% CI for MER\n%10.4f\n", results
+    return results
+end function
+
+# Several Functions for conditional logit.
+# These are NOT general
+# clprobs       --Conditional logit probability scalar  
+# clprobs_mat   --Conditional logit probabilities matrix 
+# clprobs_at    --marginal effects at a point -> 1x3 vector
+# cl_me         --marginal effects continuous w/std errors
+# cl_me_d       --marginal effects discrete   w/std errors
+
+function scalar clprobs(list y "list of choices",
+      list x "list of independent variables",
+      matrix theta "parameters")
+    # computes the probabilities for Conditional Logit
+    # Used in user written MLE  
+    matrix Y = { y }
+    matrix p = { x }
+    scalar n = $nobs    
+    matrix P = {}
+    loop i=1..n --quiet
+        scalar i1 = exp(theta[1]+theta[3]*p[i,1])
+        scalar i2 = exp(theta[2]+theta[3]*p[i,2])
+        scalar i3 = exp(theta[3]*p[i,3])
+        scalar  d = i1+i2+i3
+        matrix pp = (Y[i,1]==1)*i1/d +\
+                    (Y[i,2]==1)*i2/d +\
+                    (Y[i,3]==1)* i3/d
+        matrix P = P | pp
+    endloop  
+    return sumc(ln(P))
+end function
+
+function matrix clprobs_mat(list x, matrix theta)
+    matrix p = { x }
+    scalar n = $nobs    
+    matrix P = {}
+    loop i=1..n --quiet
+        scalar i1 = exp(theta[1]+theta[3]*p[i,1])
+        scalar i2 = exp(theta[2]+theta[3]*p[i,2])
+        scalar i3 = exp(theta[3]*p[i,3])
+        scalar  d = i1+i2+i3
+        matrix pp = i1/d ~ i2/d ~ i3/d
+        matrix P = P | pp
+    endloop  
+    return P
+end function
+
+function matrix clprobs_at(matrix x, matrix theta)
+    scalar i1 = exp(theta[1]+theta[3]*x[1])
+    scalar i2 = exp(theta[2]+theta[3]*x[2])
+    scalar i3 = exp(theta[3]*x[3])
+    scalar  d = i1+i2+i3
+    matrix pp = i1/d ~ i2/d ~ i3/d
+    return pp
+end function
+
+function scalar cl_me(matrix *x "vector for the desired point",
+      matrix *theta "parameters",
+      int q "variable index for own price",
+      int p "variable index for other price")
+    # Marginal effects for CL model -- continuous case  
+    # Function only works for 3 choice beverage model in poe
+    # Inputs: x = point at which to evaluate
+    # theta: Cond Logit MLE
+    # q: own price index 
+    # p: other price index
+    # op: 1 if own price, 0 otherwise
+    matrix mm = clprobs_at(x, theta)
+    if p == q
+        scalar me = mm[q]*(1-mm[q])*theta[3]  # own price pepsi
+    else
+        scalar me = -mm[p]*mm[q]*theta[3]      # cross price 7up
+    endif
+    return me
+end function
+
+function matrix cl_me_d(matrix *x1,
+      matrix *x2,
+      matrix *theta)
+    # Marginal effects for CL model -- discrete case  
+    matrix mm = clprobs_at(x1, theta)
+    matrix m2 = clprobs_at(x2, theta)
+    mat = m2-mm
+    return mat
+end function
+
+function matrix op_se_lpfmx (matrix b "parameter estimates",
+      matrix covmat "Covariance of MNL",
+      list XL "list of regressors",
+      matrix x "vector of x-values",
+      int j "1-based index of outcome",
+      int m "number of possible outcomes",
+      int df "degrees of freedom for CI",
+      int dist[1:2:1] "distribution" )
+    # Computes marginal effects and std errors for ordered probit/logit  
+    # must install and use lp-mfx.gfn  
+    matrix p = ordered_dpj_dx(b, XL, x, j, m, dist)
+    matrix jac = fdjac(b, ordered_dpj_dx(b, XL, x, j, m, dist))
+    matrix variance = qform(jac,covmat)
+    matrix se = sqrt(diag(variance))
+    scalar crit = critical(t,df,0.025)
+    matrix results = (p-crit*se) ~ p ~ (p+crit*se) ~ se
+
+    cnameset(results, "Lower ME Upper StdErr")
+    printf "95%% CI for MER\n%10.4f\n", results
+    return results
+end function
+
+series Bal = AccountBalance
+series CrAmt = CreditAmount
+series Val = ValueSavingsStocks
+series CCredit = ConcurrentCredits
+
+list x = const Bal CrAmt Val CCredit 
+model2 <- logit Creditability x --p-values --robust
+matrix b = $coeff
+matrix covmat = $vcv
+scalar dist = ($command == "logit")?1:2
+matrix me_logit = ame_binary(&b, x, dist)
+matrix c=ame_cov(b,$vcv,x,dist)
+t_interval_m(c[1,]',c[-1,],$df,.95)
+

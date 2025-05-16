@@ -1,9 +1,7 @@
-setwd("~/Workspace/mcdaniel/500/final")
+#setwd("~/Workspace/mcdaniel/500/final")
 # install.packages("corrplot")
 library(corrplot)
-
-
- data <- read.csv("ultimateHousing.csv")
+data <- read.csv("ultimateHousing.csv")
  
  head(data)
  
@@ -246,7 +244,7 @@ summary(model_log_multivariable_quadratic_q13)
 # Test the coefficient of size to determine if size is related to price. Based on a hypothesis test using the null hypothesis, i.e. the coefficient equals zero. 
 # There is not sufficient evidence(stastical significance) that a relationship exists between the explanatory variable and the response variable. Therefore, size can be removed from the regression model without any impact on the results.
 
-# False x 
+# False x
 # True
 
 # Q19 Does the age of a house really affect its price? Again based on a hypothesis test for this model and its variables,
