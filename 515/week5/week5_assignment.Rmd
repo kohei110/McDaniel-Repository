@@ -1,0 +1,64 @@
+---
+title: "ANA 515 Week5 Assignment"
+author: Kohei Nishitani
+output: 
+  html_document:
+    theme: flatly
+---
+
+```{r libs, include=FALSE}
+library(bslib)
+library(knitr)
+library(tidyverse)
+library(readr)
+library(ggplot2)
+library(scales)
+knitr::opts_chunk$set(echo = TRUE, warning = FALSE)
+
+```
+
+
+```{r setup, include=FALSE}
+setwd("D:/Workspace/McDaniel-Repository/515/week5")
+
+housing_data <- read.csv("kc_house_data.csv")
+
+housing_data$grade <- as.factor(housing_data$grade)
+```
+
+## Intro
+This [dataset originates from King County, WA, USA](https://www.kaggle.com/datasets/harlfoxem/housesalesprediction/data), contains a wide range of real estate sales data which is comprehensive details on homes sold within the county, featuring over 20 columns that captures various aspects of the properties listed. 
+
+
+## Takeaway1
+This dataset has `r nrow(housing_data)` sales transactions with `r ncol(housing_data)` variables. The mean sales price is `r format(mean(housing_data$price), big.mark = ",", scientific = FALSE)`. Given this histogram and this mean value, we see the skewness of the distribution.
+
+```{r plot, echo=FALSE}
+ggplot(data = housing_data, aes(x = price))+
+  geom_histogram(binwidth = 100000)+
+  scale_x_continuous(labels = label_comma())
+
+```
+
+## Takeaway2
+To get more in-depth insights, I visualize the relationship between price, sqft and housing grade index. The first scatter plot shows the positive correlation between price and sqft; however we can't find a explicit insight about grade due to overwrap. As a next step, I added facet and visualize with multiple charts. It helped me to grasp how grade also affects to price.   
+
+
+```{r plot1, echo=FALSE}
+ggplot(data = housing_data, aes(x = sqft_living, y = price))+
+  geom_point()+
+  geom_jitter(aes(colour = grade))+
+  scale_x_log10() + 
+  scale_y_log10() 
+
+```
+
+
+```{r plot2, echo=FALSE}
+ggplot(data = housing_data, aes(x = sqft_living, y = price))+
+  geom_point()+
+  geom_jitter(aes(colour = grade))+
+  scale_x_log10() + 
+  scale_y_log10() 
+  facet_wrap(~ grade)
+```
