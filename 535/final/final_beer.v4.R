@@ -26,7 +26,6 @@ library(fpp2)
 library(fpp3)
 library(xlsx)
 
-
 #str(aus_production)
 #Write out the data.  To use the xlsx package the data must be a dataframe.
 #
@@ -221,6 +220,7 @@ plot(beer.comp)
 beer.tsb <- as_tsibble(beer.ts)
 str(beer.tsb)
 
+#Q27
 par(mfrow = c(1,1))
 beer.tsb |>
   ACF() |> autoplot() +
@@ -266,7 +266,7 @@ fit.firstBeer.tslm |> gg_tsresiduals() +
 fit.firstBeer.tslm %>%
   accuracy() %>%
   arrange(MAPE)
-
+# Q39~38
 fit.secondBeer.tslm <- secondBeer.tsb |>
   model(fit_tslm2 = TSLM(value ~ trend() + I(trend()^2) + season()))
 report(fit.secondBeer.tslm)
@@ -287,6 +287,13 @@ fit.secondBeer.tslm %>%
 #which is consistent with a pattern in the plot of residuals.  Therefore,
 #we may need to take a difference in the second time range to eliminate
 #the periodicity.  
+
+
+#####################################################################
+#####################################################################
+## Do we use this script? 
+#####################################################################
+#####################################################################
 
 #
 #We'll continue looking at the beer data as a whole and in the two different time
@@ -322,6 +329,7 @@ autoplot(secondBeer.final, ylab = "secondBeer")
 #range it appears that we've removed any trend but what about seasonality?
 #We can use the gg_tsresiduals() function to look at the ACF for that
 #
+
 
 str(beer.adj)
 beer.adj.tsb <- as_tsibble(beer.adj)
@@ -388,6 +396,14 @@ fit.secondBeer.adj.tslm %>%
 #with zeros. Then, check to make sure all NA's have been replaced.
 #
 
+
+#####################################################################
+#####################################################################
+#####################################################################
+#####################################################################
+
+
+
 beer.adj <- replace(beer.adj, is.na(beer.adj), 0)
 
 missing <- sum(which(is.na(beer.adj)))
@@ -402,6 +418,7 @@ valid.ts <- window(beer.adj, start = c(1956, nTrain + 1), end = c(1956, nTrain +
 
 train.comp <- decompose(train.ts)
 train.adj <- train.ts - train.comp$trend - train.comp$seasonal
+#Q39
 plot(beer.ts, xlab = "Time", ylab = "Beer Production", type = "l")
 plot(beer.adj, xlab = "Time", ylab = "Adjusted Beer Production", type = "l")
 
@@ -412,8 +429,9 @@ summary(train.lm.trend.season)
 #Note that I've added a couple more higher order terms to this model.  Play around
 #with this and see if you agree that this adds a bit more accuracy to the model.
 
+# Q40
 #Look at the residuals and ACF
-par(mfrow = c(1,2))
+par(mfrow = c(1,1))
 plot(train.lm.trend.season$residuals, ylab = "Residuals", xlab = "Time", type = "l",
      xaxt = "n")
 Acf(train.lm.trend.season$residuals)
@@ -421,6 +439,7 @@ Acf(train.lm.trend.season$residuals)
 #The residuals look ok, but it's difficult to tell about the magnitude on this plot.
 #You might want to re-plot this with only 1 plot per figure.  And, there is still 
 #some residual (no pun intended) problems with the trend and/or seasonal variation.  
+
 #But, let's move forward and look at another way we generated a forecast in Lab4. 
 #Create the forecast for the validation period, i.e. the portion of the dataset
 #that we set aside to evaluate the forecast accuracy.  
@@ -447,6 +466,7 @@ arrows(2011, 425, 2008, 425, code = 3, length = 0.1, angle = 30,
 #
 #Let's just look at the validation period
 #
+#Q41
 
 plot(train.lm.pred,xlim = c(2007.5, 2010.5), xlab = "Time", ylab = "Beer Production", type = "l")
 
@@ -468,13 +488,18 @@ arrows(2011, 425, 2008, 425, code = 3, length = 0.1, angle = 30,
 #could build a linear model.  It seems that it did work as we wanted.  So, let's
 #look at the residuals.  
 
+
+#Q42
 fit.beer.adj.tslm |> gg_tsresiduals()
 
 #This gives us some conflicting information.  Let's look further.  Let's use the
 #ADF test and the unitroot_ndiffs() command to see what else we can discover. 
 
+#Q49 Corrected
 adf.test(beer.ts)
 
+
+#Q50
 beer_unitroot <- unitroot_ndiffs(beer.ts)
 beer_unitroot
 
@@ -483,6 +508,7 @@ beer_unitroot
 #seasonal difference to deseasonalize the data and see what effect that has on 
 #a linear model and its accuracy.
 
+#Q51
 beer.comp <- decompose(beer.ts)
 str(beer.comp)
 beer.deseas <- beer.comp$x - beer.comp$seasonal
@@ -502,7 +528,7 @@ fit.beer.deseas.tslm %>%
 
 #The residuals don't look too good, actually worse than before.  Let's look at 
 #results from an ADF and a KPSS test to see if the data are stationary.
-
+#Q46
 beer.deseas.ts <- as.ts(beer.deseas.tsb)
 str(beer.deseas.ts)
 
@@ -527,6 +553,7 @@ beer.deseas.tsb |>
 #time we'll use the diff() command from the R base package.  That is, we'll twice 
 #difference for seasonality. 
 
+#Q53?
 diff.once.ts <- diff(beer.ts, lag = 4)
 beer.diff.tsb <- as_tsibble(diff.once.ts)
 
@@ -538,12 +565,15 @@ fit.beer.twice.tslm <- beer.diff.twice.tsb |>
   model(fit.beer.twice.tslm = TSLM(value ~ trend() + season()))
 report(fit.beer.twice.tslm)
 
+
+#Q48
 fit.beer.twice.tslm |> gg_tsresiduals()
 
 fit.beer.twice.tslm %>%
   accuracy() %>%
   arrange(MAPE)
 
+#Q49
 beer_unitroot2 <- unitroot_ndiffs(diff.twice.ts)
 beer_unitroot2
 
@@ -601,7 +631,8 @@ library(fpp2)
 library(fpp3)
 library(xlsx)
 
-beerProd <- read.csv("I:/My Passport Documents/McDaniel/DataAnalytics/ANA535/NewANA535/Exams/Final Exam/beerProd.csv")
+setwd("~/Workspace/McDaniel-Repository/535/final")
+beerProd <- read.csv("beerProd.csv")
 beer <- beerProd
 colnames(beer) <- c("Date", "beer")
 str(beer)
@@ -640,6 +671,7 @@ summary(auarBeer.pred)
 
 plot(auarBeer.pred, xaxt = "n", type = "l")
 
+#Q62
 recent_production <- aus_production |>
   filter(year(Quarter) >= 2000)
 recent_production |>
@@ -648,6 +680,7 @@ recent_production |>
 
 recent_production |> ACF(Beer, lag_max = 9)
 
+#Q63
 recent_production |>
   ACF(Beer) |>
   autoplot() + labs(title="Australian beer production")
@@ -683,6 +716,7 @@ beer_ma |>
   labs(y = "Beer",
        title = "Total Beer Production")
 
+# Q64~66
 # Set training data from 1992 to 2006
 train <- aus_production |>
   filter_index("1992 Q1" ~ "2006 Q4")
@@ -760,6 +794,7 @@ fit |> forecast() |> autoplot(recent_production)
 
 recent_production <- aus_production |>
   filter(year(Quarter) >= 1992)
+
 recent_production |>
   autoplot(Beer) +
   labs(y = "Megalitres",
@@ -800,7 +835,7 @@ fc_beer |>
     title = "Forecasts of beer production using regression",
     y = "megalitres"
   )
-
+#Q78
 fc <- aus_production |>
   filter(Quarter < max(Quarter - 11)) |>
   model(
@@ -814,7 +849,7 @@ fc |>
 
 fc |> accuracy(aus_production)
 
-
+#Q79 ~ 80
 fc <- aus_production |>
   filter(Quarter < max(Quarter - 11)) |>
   model(
@@ -825,3 +860,5 @@ fc <- aus_production |>
   forecast(h = "3 years")
 fc |>
   autoplot(filter_index(aus_production, "2007 Q1" ~ .), level = NULL)
+
+fc |> accuracy(aus_production)

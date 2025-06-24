@@ -412,3 +412,19 @@ ggplot() +
   scale_colour_manual(values = c(UK = "#1b9e77", US = "#d95f02")) +
   scale_fill_manual(values   = c(UK = "#1b9e77", US = "#d95f02")) +
   theme_minimal()
+
+
+##########################################################################
+# Additional analysis with different sector
+##########################################################################
+
+
+#### US Energy https://fred.stlouisfed.org/series/IPB50089S
+
+
+data <- read.csv("IPB50089S.csv")
+
+# 3. Inspect structure
+glimpse(data)
+
+str(Amtrak)
